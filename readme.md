@@ -17,7 +17,7 @@ https://blog.golioth.io/improving-zephyr-project-structure-with-manifest-files/
 2.) cd into that folder and run:
 
 ```
-west init -m https://github.com/nxp-pro-support/mcxn-iot --mr main
+west init -m https://github.com/wavenumber-eng/mcxn-iot --mr main
 ```
 
 This initiazes the folder as a west/zephyr workspace registered to our application repository.
