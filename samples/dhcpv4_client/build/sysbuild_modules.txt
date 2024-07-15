@@ -1,1 +1,0 @@
-"mcuboot":"C:/ELI/mcxn-iot/bootloader/mcuboot":"C:/ELI/mcxn-iot/bootloader/mcuboot/boot/zephyr/sysbuild"
