@@ -12,6 +12,13 @@ manifest:
 
   projects:
 
+
+    - name: golioth
+      path: modules/lib/golioth-firmware-sdk
+      revision: main
+      url: https://github.com/golioth/golioth-firmware-sdk.git
+      submodules: true
+      
     - name: zephyr
       remote: zephyrproject-rtos
       repo-path: zephyr
@@ -19,11 +26,6 @@ manifest:
       import: true
 
 
-    - name: golioth
-      path: modules/lib/golioth-firmware-sdk
-      revision: main
-      url: https://github.com/golioth/golioth-firmware-sdk.git
-      submodules: true
 
   self:
     path: mcxn-iot
