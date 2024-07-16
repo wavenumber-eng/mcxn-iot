@@ -18,6 +18,13 @@ manifest:
       revision: main
       import: true
 
+
+    - name: golioth
+      path: modules/lib/golioth-firmware-sdk
+      revision: main
+      url: https://github.com/golioth/golioth-firmware-sdk.git
+      submodules: true
+
   self:
     path: mcxn-iot
     
