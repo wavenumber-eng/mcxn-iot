@@ -20,13 +20,23 @@ LOG_MODULE_REGISTER(net_dhcpv4_client_sample, LOG_LEVEL_DBG);
 #include <zephyr/net/net_context.h>
 #include <zephyr/net/net_mgmt.h>
 
+
+#include <golioth/client.h>
+#include <samples/common/sample_credentials.h>
+#include <samples/common/net_connect.h>
+
+#if IS_ENABLED(CONFIG_NET_L2_ETHERNET)
+#include <zephyr/net/net_if.h>
+#endif
+
+
 #define DHCP_OPTION_NTP (42)
 
 static uint8_t ntp_server[4];
-
 static struct net_mgmt_event_callback mgmt_cb;
-
 static struct net_dhcpv4_option_callback dhcp_cb;
+bool assigned_ip = 0;
+
 
 static void start_dhcpv4_client(struct net_if *iface, void *user_data)
 {
@@ -69,6 +79,8 @@ static void handler(struct net_mgmt_event_callback *cb,
 						 buf, sizeof(buf)));
 		LOG_INF("Lease time[%d]: %u seconds", net_if_get_by_iface(iface),
 			iface->config.dhcpv4.lease_time);
+
+		assigned_ip = 1;
 	}
 }
 
@@ -85,6 +97,10 @@ static void option_handler(struct net_dhcpv4_option_callback *cb,
 
 int main(void)
 {
+	int counter = 0;
+	struct golioth_client *client;
+	const struct golioth_client_config *client_config;
+
 	LOG_INF("Run dhcpv4 client");
 
 	net_mgmt_init_event_callback(&mgmt_cb, handler,
@@ -99,7 +115,26 @@ int main(void)
 
 	net_if_foreach(start_dhcpv4_client, NULL);
 
-
+	while(assigned_ip == 0){
+        LOG_INF("Waiting IP...");
+        k_sleep(K_SECONDS(1));
+	}	
 	
+
+	LOG_INF("IP ADDRESS CONFIGURED! %d", counter);
+	LOG_ERR("IP ADDRESS CONFIGURED! %d", counter);
+	k_sleep(K_SECONDS(3));
+
+	client_config = golioth_sample_credentials_get();
+    client = golioth_client_create(client_config);
+
+    while (true)
+    {
+        LOG_INF("Sending hello! %d", counter);
+
+        ++counter;
+        k_sleep(K_SECONDS(5));
+    }
+
 	return 0;
 }
