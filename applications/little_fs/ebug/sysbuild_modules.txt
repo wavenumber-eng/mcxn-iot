@@ -1,0 +1,1 @@
+"mcuboot":"C:/companies/wavenumber/mcxn-iot/bootloader/mcuboot":"C:/companies/wavenumber/mcxn-iot/bootloader/mcuboot/boot/zephyr/sysbuild"
