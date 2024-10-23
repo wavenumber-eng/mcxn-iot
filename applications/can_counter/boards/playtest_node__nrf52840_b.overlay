@@ -1,0 +1,80 @@
+mikrobus_spi: &spi0 {
+	status = "okay";
+};
+
+&mikrobus_spi {
+	cs-gpios = <&mikrobus_header 2 GPIO_ACTIVE_LOW>;
+    status = "okay";
+	mcp2518fd_mikroe_mcp2518fd_click: mcp2518fd@0 {
+		compatible = "microchip,mcp251xfd";
+		status = "okay";
+
+		spi-max-frequency = <1000000>;
+		int-gpios = <&mikrobus_header 7 GPIO_ACTIVE_LOW>;
+		reg = <0x0>;
+		osc-freq = <4000000>;
+
+	};
+};
+
+
+// Not to colide with the mikrobus assignments
+&sw_pwm {
+    status = "disabled";
+};
+
+&i2s0 {
+    status = "disabled";
+};
+
+/ {
+	chosen {
+		zephyr,canbus = &mcp2518fd_mikroe_mcp2518fd_click;
+	};
+
+    aliases{
+		can-stby-pin = &can_stby_pin;
+	};
+
+    gpio_pins {
+		can_stby_pin: P010 {
+			gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;
+			label = "Can transceiver standby pin";
+		};
+
+		can_int_pin: P009 {
+			gpios = <&gpio0 9 GPIO_ACTIVE_LOW>;
+			label = "Can transceiver interrupt pin";
+		};
+    };
+
+
+    mikrobus_header: mikrobus-connector {
+		compatible = "mikro-bus";
+		#gpio-cells = <2>;
+		gpio-map-mask = <0xffffffff 0xffffffc0>;
+		gpio-map-pass-thru = <0 0x3f>;
+ 		gpio-map =	
+				<0 0 &gpio1 4 0>,	/* AN  */       //standby pin
+				/* Not a GPIO*/		/* RST */
+				<2 0 &gpio0 20 0>,	/* CS   */      //ready
+				<3 0 &gpio0 28 0>,	/* SCK  */      //ready 
+				<4 0 &gpio0 31 0>,	/* MISO */      //ready
+				<5 0 &gpio0 2 0>,	/* MOSI */      //ready
+							/* +3.3V */
+							/* GND */
+				<6 0 &gpio1 5 0>,	/* PWM  */
+				<7 0 &gpio0 9 0>,	/* INT  */      //ready 
+				<8 0 &gpio1 24 0>,	/* RX   */      //apparently fixed
+				<9 0 &gpio0 27 0>,	/* TX   */      // Not used
+				<10 0 &gpio1 6 0>,	/* SCL  */      // Not used
+				<11 0 &gpio1 4 0>;	/* SDA  */      // Not used
+							/* +5V */
+							/* GND */
+	};
+
+};
+
+&gpio0 {
+	status = "okay";
+};

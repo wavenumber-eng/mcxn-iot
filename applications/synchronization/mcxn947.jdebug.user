@@ -1,28 +1,26 @@
 
 
-OpenDocument="fault_s.S", FilePath="C:/Users/Jerry/Desktop/hello_MCXN947/zephyr/arch/arm/core/cortex_m/fault_s.S", Line=63
-OpenDocument="cmsis_gcc.h", FilePath="C:/Users/Jerry/Desktop/hello_MCXN947/modules/hal/cmsis/CMSIS/Core/Include/cmsis_gcc.h", Line=943
-OpenDocument="reset.S", FilePath="C:/Users/Jerry/Desktop/hello_MCXN947/zephyr/arch/arm/core/cortex_m/reset.S", Line=89
-OpenDocument="kernel.h", FilePath="C:/Users/Jerry/Desktop/hello_MCXN947/mcxn-iot/applications/synchronization/build/zephyr/include/generated/zephyr/syscalls/kernel.h", Line=70
+OpenDocument="kernel.h", FilePath="C:/companies/wavenumber/mcxn-iot/mcxn-iot/applications/synchronization/build/zephyr/include/generated/zephyr/syscalls/kernel.h", Line=64
+OpenDocument="fault_s.S", FilePath="C:/companies/wavenumber/mcxn-iot/zephyr/arch/arm/core/cortex_m/fault_s.S", Line=38
+OpenDocument="reset.S", FilePath="C:/companies/wavenumber/mcxn-iot/zephyr/arch/arm/core/cortex_m/reset.S", Line=77
 OpenToolbar="Debug", Floating=0, x=0, y=0
-OpenWindow="Registers 1", DockArea=RIGHT, x=0, y=3, w=741, h=85, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, FilteredItems=[], RefreshRate=1
-OpenWindow="Source Files", DockArea=LEFT, x=0, y=1, w=484, h=317, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Disassembly", DockArea=RIGHT, x=0, y=1, w=741, h=252, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Global Data", DockArea=RIGHT, x=0, y=2, w=741, h=136, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Watched Data 1", DockArea=LEFT, x=0, y=0, w=484, h=210, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Terminal", DockArea=BOTTOM, x=0, y=0, w=1177, h=161, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Data Sampling", DockArea=LEFT, x=0, y=2, w=484, h=252, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, VisibleTab=0, UniformSampleSpacing=0
-OpenWindow="Console", DockArea=BOTTOM, x=1, y=0, w=742, h=161, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Zephyr", DockArea=RIGHT, x=0, y=0, w=741, h=305, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, Showing="Task List"
+OpenWindow="Registers 1", DockArea=RIGHT, x=0, y=2, w=695, h=220, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, FilteredItems=[], RefreshRate=1
+OpenWindow="Source Files", DockArea=LEFT, x=0, y=1, w=437, h=456, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Disassembly", DockArea=RIGHT, x=0, y=0, w=695, h=580, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Global Data", DockArea=RIGHT, x=0, y=1, w=695, h=330, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Watched Data 1", DockArea=LEFT, x=0, y=0, w=437, h=308, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Terminal", DockArea=BOTTOM, x=0, y=0, w=783, h=161, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Data Sampling", DockArea=LEFT, x=0, y=2, w=437, h=366, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, VisibleTab=0, UniformSampleSpacing=0
+OpenWindow="Console", DockArea=BOTTOM, x=1, y=0, w=494, h=161, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
 SmartViewPlugin="", Page="", Toolbar="Hidden", Window="SmartView 1"
-TableHeader="Global Data", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Location";"Size";"Type";"Scope"], ColWidths=[145;100;100;100;100;179]
-TableHeader="Source Files", SortCol="File", SortOrder="ASCENDING", VisibleCols=["File";"Status";"Size";"#Insts";"Path"], ColWidths=[162;100;100;100;818]
+TableHeader="Global Data", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Location";"Size";"Type";"Scope"], ColWidths=[145;100;100;100;100;182]
+TableHeader="Source Files", SortCol="File", SortOrder="ASCENDING", VisibleCols=["File";"Status";"Size";"#Insts";"Path"], ColWidths=[162;100;100;100;794]
 TableHeader="Data Sampling Table", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Index";"Time"], ColWidths=[100;100]
 TableHeader="Data Sampling Setup", SortCol="Expression", SortOrder="DESCENDING", VisibleCols=["Expression";"Type";"Value";"Min";"Max";"Average";"# Changes";"Min. Change";"Max. Change"], ColWidths=[100;100;100;100;100;100;100;100;100]
 TableHeader="Power Sampling", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Index";"Time";"Ch 0"], ColWidths=[100;100;100]
-TableHeader="Registers 1", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Description"], ColWidths=[199;287;255]
+TableHeader="...", SortCol="None", SortOrder="ASCENDING", VisibleCols=["..."], ColWidths=[741]
+TableHeader="Task List", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Threads";"TID";"Entry";"Priority";"Status";"Stack"], ColWidths=[110;110;110;110;110;191]
+TableHeader="Registers 1", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Description"], ColWidths=[199;287;224]
 TableHeader="Watched Data 1", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Location";"Refresh"], ColWidths=[225;286;100;100]
 TableHeader="RegisterSelectionDialog", SortCol="None", SortOrder="ASCENDING", VisibleCols=[], ColWidths=[]
 TableHeader="TargetExceptionDialog", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Address";"Description"], ColWidths=[200;100;100;359]
-TableHeader="...", SortCol="None", SortOrder="ASCENDING", VisibleCols=["..."], ColWidths=[741]
-TableHeader="Task List", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Threads";"TID";"Entry";"Priority";"Status";"Stack"], ColWidths=[110;110;110;110;110;191]

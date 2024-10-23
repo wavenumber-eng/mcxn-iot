@@ -1,0 +1,21 @@
+{
+  "version": "24.9",
+  "toolchainPath": "C:/Users/LomasS/zephyr-sdk-0.16.8/arm-zephyr-eabi",
+  "linkedProjects": [],
+  "trustZoneType": "none",
+  "multicoreType": "none",
+  "debug": {
+    "linkserver": {
+      "device": "MIMXRT1176xxxxx:MIMXRT1170-EVK",
+      "core": "cm7"
+    },
+    "pemicro": {},
+    "segger": {}
+  },
+  "projectType": "zephyr-repository",
+  "sdk": {
+    "version": "3.7.0",
+    "path": "c:\\Users\\LomasS\\zephyrproject",
+    "boardId": "mimxrt1170_evk/mimxrt1176/cm7"
+  }
+}

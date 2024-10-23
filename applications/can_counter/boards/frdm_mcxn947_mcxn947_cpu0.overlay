@@ -1,0 +1,62 @@
+///*
+// * Copyright 2021 Nordic Semiconductor ASA
+// *
+// * SPDX-License-Identifier: Apache-2.0
+// */
+//
+///* This board disables can1 by default in favor of USB. */
+//
+//&pinctrl{
+//
+//	pinmux_flexcan0: pinmux_flexcan0 {
+//		group0 {
+//			pinmux = <CAN0_TXD_PIO1_2>,
+//				<CAN0_RXD_PIO1_3>;
+//			slew-rate = "fast";
+//			drive-strength = "low";
+//			input-enable;
+//		};
+//	};
+//
+//	/delete-node/ blue_led;
+//	/delete-node/ red_led;
+//
+//};
+//
+/// {
+//
+//	aliases{
+//		can-stby-pin = &can_stby_pin;
+//	};
+//
+//	gpio_keys {
+//		can_stby_pin: P010 {
+//			gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;
+//			label = "Can transceiver standby pin";
+//		};
+//    };
+//
+//
+//    leds {
+//		red_led: led_3 {
+//			gpios = <&gpio3 19 GPIO_ACTIVE_LOW>;
+//			label = "Red LED";
+//			status = "okay";
+//		};
+//	};
+//
+//};
+//
+//&gpio3 {
+//	status = "okay";
+//};
+//
+//
+////	red_led: led_3 {
+////		gpios = <&gpio0 10 GPIO_ACTIVE_>;
+////		label = "Red LED";
+////		status = "okay";
+////	};
+//
+//
+//

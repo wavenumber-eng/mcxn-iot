@@ -1,0 +1,113 @@
+/*
+ * Copyright 2021 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/* This board disables can1 by default in favor of USB. */
+
+//&pinctrl{
+//
+//	pinmux_flexcan0: pinmux_flexcan0 {
+//		group0 {
+//			pinmux = <CAN0_TXD_PIO1_2>,
+//				<CAN0_RXD_PIO1_3>;
+//			slew-rate = "fast";
+//			drive-strength = "low";
+//			input-enable;
+//		};
+//	};
+//
+//	/delete-node/ blue_led;
+//	/delete-node/ red_led;
+//
+//};
+
+/ {
+
+//	aliases{
+//		can-stby-pin = &can_stby_pin;
+//	};
+//
+//	gpio_keys {
+//		can_stby_pin: P010 {
+//			gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;
+//			label = "Can transceiver standby pin";
+//		};
+//    };
+
+
+//    leds {
+//		red_led: led_3 {
+//			gpios = <&gpio3 19 GPIO_ACTIVE_HIGH>;
+//			label = "Red LED";
+//			status = "okay";
+//		};
+//	};
+
+};
+
+
+
+//	red_led: led_3 {
+//		gpios = <&gpio0 10 GPIO_ACTIVE_>;
+//		label = "Red LED";
+//		status = "okay";
+//	};
+
+&flexcan0 {
+	status = "disabled";
+};
+
+/delete-node/ &flexcan0;
+
+
+mikrobus_spi: &flexcomm7_lpspi7 {
+	status = "okay";
+};
+
+//&mikrobus_spi {
+//	cs-gpios = <&mikrobus_header 2 GPIO_ACTIVE_LOW>;
+//
+//	mcp2518fd_mikroe_mcp2518fd_click: mcp2518fd@0 {
+//		compatible = "microchip,mcp251xfd";
+//		status = "okay";
+//
+//		spi-max-frequency = <18000000>;
+//		int-gpios = <&mikrobus_header 7 GPIO_ACTIVE_LOW>;
+//		reg = <0x0>;
+//		osc-freq = <40000000>;
+//
+//	};
+//};
+
+/ {
+	chosen {
+		zephyr,canbus = &mcp2518fd_mikroe_mcp2518fd_click;
+	};
+
+
+	mikrobus_header: mikrobus-connector {
+		compatible = "mikro-bus";
+		#gpio-cells = <2>;
+		gpio-map-mask = <0xffffffff 0xffffffc0>;
+		gpio-map-pass-thru = <0 0x3f>;
+ 		gpio-map =	
+				<0 0 &gpio0 16 0>,	/* AN  */
+				/* Not a GPIO*/		/* RST */
+				<2 0 &gpio3 2 0>,	/* CS   */
+				<3 0 &gpio3 3 0>,	/* SCK  */
+				<4 0 &gpio3 4 0>,	/* MISO */
+				<5 0 &gpio3 5 0>,	/* MOSI */
+							/* +3.3V */
+							/* GND */
+				<6 0 &gpio1 5 0>,	/* PWM  */
+				<7 0 &gpio1 18 0>,	/* INT  */
+				<8 0 &gpio1 24 0>,	/* RX   */
+				<9 0 &gpio0 27 0>,	/* TX   */
+				<10 0 &gpio1 20 0>,	/* SCL  */
+				<11 0 &gpio1 21 0>;	/* SDA  */
+							/* +5V */
+							/* GND */
+	};
+};
