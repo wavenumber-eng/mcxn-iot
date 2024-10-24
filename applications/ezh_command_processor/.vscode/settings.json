@@ -8,7 +8,8 @@
         "t2.h": "c",
         "*.txt": "cpp",
         "fsl_device_registers.h": "c",
-        "irq.h": "c"
+        "irq.h": "c",
+        "fsl_common.h": "c"
     },
     "workbench.colorCustomizations": {
         "activityBar.activeBackground": "#5b1942",

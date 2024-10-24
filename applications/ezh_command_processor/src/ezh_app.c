@@ -90,7 +90,7 @@ void ezh__start_app()
 
     CLOCK_EnableClock(kCLOCK_Smartdma); // enable EZH clock
 
-    EZH_SetExternalFlag(0);
+//    EZH_SetExternalFlag(0);
 
     ezh_parameters.coprocessor_stack = (void *)ezh_stack;
     ezh_parameters.p_buffer = (uint32_t *)params;
@@ -116,7 +116,6 @@ void ezh__start_app()
 void ezh_app__toggle_test_io(void)
 {
     E_NOP;
-
     E_NOP;
     E_PER_READ(R6, ARM2EZH); // Read the base address of the parameters into R6
 
@@ -190,62 +189,41 @@ void ezh_app__command_processor(void)
 {
     E_NOP;
     E_NOP;
+    E_PER_READ(R6, ARM2EZH); // Read the base address of the parameters into R6
 
-    E_PER_READ(TEMP_REG1, ARM2EZH);         //Read the base address of the parameters into R0
+    E_PER_READ(TEMP_REG1, ARM2EZH);         //Read the base address of the parameters into R6
     E_LSR(TEMP_REG1, TEMP_REG1, 2);         //make sure parameter structure 32-bit aligned
-    E_LSL(TEMP_REG1, TEMP_REG1, 2);    
+    E_LSL(TEMP_REG1, TEMP_REG1, 2); 
 
-    E_LDR(SP, TEMP_REG1, 0);                            // Load stack pointer from the 1st 32-bit word of the parameter struct
-    E_LDR(PARAM_STRUCT_PTR_REG, TEMP_REG1, 1);          //load parameter reg pointer
+    E_LDR(SP, TEMP_REG1, 0);                          //load stack pointer from the 1st 32-bit word of the parameter struct
+    E_LDR(PARAM_STRUCT_PTR_REG, TEMP_REG1, 1);        //load parameter reg pointer
 
-    E_BSET_IMM(GPD, GPD, EZH_TEST_GPIO);    // Set EZH_TEST_GPIO  as output , Direction bit = 1
+    E_BSET_IMM(GPD, GPD, EZH_TEST_GPIO);            // Set EZH_TEST_GPIO  as output , Direction bit = 1 
+    E_BSET_IMM(GPO, GPO, EZH_TEST_GPIO);            // Make the default setting as high
 
-    E_HEART_RYTHM_IMM((150000000 / 4000));  // Set the 16-bit heartbeat counter period to 250uS assuming 150MHz Clock
-
+    E_HEART_RYTHM_IMM((150000000 / 4000));          // Set the 16-bit heartbeat counter period to 250uS assuming 150MHz Clock
 
 E_LABEL("reset_cmd");
+
     E_SUB(COMMAND_REG,COMMAND_REG,COMMAND_REG);                 //zero out the command register
     E_STR(PARAM_STRUCT_PTR_REG,COMMAND_REG,PARAM_OFFSET__CMD); //put the zero'd out regsiter back int the structure for the arm
-
-
-E_LABEL("wait_for_command");
-
-    E_LDR(COMMAND_REG, PARAM_STRUCT_PTR_REG,PARAM_OFFSET__CMD);        //Check to see if we have  new command
-    E_ADD(COMMAND_REG,COMMAND_REG,0);
-    E_BSET_IMM(GPO, GPO, EZH_TEST_GPIO);    // Make the default setting as high
+    E_BSET_IMM(GPO, GPO, EZH_TEST_GPIO); // Set test GPIO
+//    E_BSET_IMM(GPO, GPO, EZH_TEST_GPIO); // Set test GPIO
+//    E_WAIT_FOR_BEAT();
+//    E_WAIT_FOR_BEAT();
 //
-//    E_COND_GOTO(ZE,"no_cmd");
+//    E_BCLR_IMM(GPO, GPO, EZH_TEST_GPIO); // Clear test GPIO
+//    E_WAIT_FOR_BEAT();
+//    E_WAIT_FOR_BEAT();
+    
+    E_GOSUB("reset_cmd");
+
+
+//    E_LABEL("reset_cmd");
 //    E_NOP;
 //    E_NOP;
-//
-//    E_SUB_IMM(TEMP_REG2, COMMAND_REG, CMD__TOGGLE_TEST_IO); 
-//    E_COND_GOTO(ZE, "toggle_test_io");
-//
-//    E_GOSUB("reset_cmd");
-//
-//
-//
-//E_LABEL("toggle_test_io");
-// 	E_BSET_IMM(GPO, GPO, EZH_TEST_GPIO); //Set test GPIO
-//	E_WAIT_FOR_BEAT();
-//	E_WAIT_FOR_BEAT();
-//    E_BCLR_IMM(GPO, GPO, EZH_TEST_GPIO); //Clear test GPIO
-//    E_WAIT_FOR_BEAT();
-//    E_WAIT_FOR_BEAT();
-//    E_BSET_IMM(GPO, GPO, EZH_TEST_GPIO); //Set test GPIO
-//	E_WAIT_FOR_BEAT();
-//	E_WAIT_FOR_BEAT();
-//    E_WAIT_FOR_BEAT();
-//    E_BCLR_IMM(GPO, GPO, EZH_TEST_GPIO); //Clear test GPIO
-//    E_WAIT_FOR_BEAT();
-//    E_WAIT_FOR_BEAT();
-//    E_WAIT_FOR_BEAT(); 
-//
-//
-//
- E_LABEL("no_cmd");
-    E_GOSUB("wait_for_command");
-    E_NOP;
-    E_NOP;
-   
+//    E_LOAD_IMM(COMMAND_REG, 1);
+//    E_SUB(COMMAND_REG,COMMAND_REG,COMMAND_REG);                 //zero out the command register
+//    E_STR(PARAM_STRUCT_PTR_REG,COMMAND_REG,PARAM_OFFSET__CMD); //put the zero'd out regsiter back int the structure for the arm
+
 }

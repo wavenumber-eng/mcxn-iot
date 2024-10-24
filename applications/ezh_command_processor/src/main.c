@@ -52,7 +52,7 @@ int main(void)
 
     while (1)
     {   
-        //ezh_parameters.command = 1;
+        //ezh_parameters.p_buffer[0] = 1;
         k_sleep(K_MSEC(500));
     }
 
