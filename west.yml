@@ -6,6 +6,9 @@ manifest:
     - name: zephyrproject-rtos
       url-base: https://github.com/zephyrproject-rtos
 
+    - name: wn
+      url-base: https://github.com/wavenumber-eng
+
   defaults:
     remote: zephyrproject-rtos
     revision: main
@@ -24,6 +27,16 @@ manifest:
       repo-path: zephyr
       revision: main
       import: true
+
+    - name: wn_zephyr_modules   
+      remote: wn    
+      path: ./modules/wn_modules     
+      revision: main
+     
+    - name: bunny_build
+      remote: wn
+      revision: main
+      path: modules/bunny_build
 
 
 
