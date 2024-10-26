@@ -9,7 +9,9 @@
         "*.txt": "cpp",
         "fsl_device_registers.h": "c",
         "irq.h": "c",
-        "fsl_common.h": "c"
+        "fsl_common.h": "c",
+        "ezh_init.h": "c",
+        "bunny_build.h": "c"
     },
     "workbench.colorCustomizations": {
         "activityBar.activeBackground": "#5b1942",

@@ -30,5 +30,8 @@ void ezh__start_app();
 
 void ezh__send_cmd(uint32_t cmd);
 
+void ezh__execute_command(uint8_t cmd);
+
+
 #endif
 

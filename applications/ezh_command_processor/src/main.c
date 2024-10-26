@@ -51,9 +51,13 @@ int main(void)
     ezh__start_app();
 
     while (1)
-    {   
-        //ezh_parameters.p_buffer[0] = 1;
-        k_sleep(K_MSEC(500));
+    {
+                ezh__execute_command(2);
+        k_sleep(K_MSEC(100));
+
+        ezh__execute_command(1);
+        k_sleep(K_MSEC(100));
+
     }
 
     while (1)
