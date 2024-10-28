@@ -92,13 +92,16 @@ int main(void)
 
     ezh__start_app();
 
+    ext_ram.RDID();
     while (1)
-    {
-        ezh__execute_command(2);
-        k_sleep(K_MSEC(100));
+    {   
+//        ezh__execute_command(2);
+//        k_sleep(K_MSEC(100));
+//
+//        ezh__execute_command(1);
 
-        ezh__execute_command(1);
-        k_sleep(K_MSEC(100));
+        ext_ram.ezh_write(0x112233, nullptr, 0);
+        k_sleep(K_MSEC(250));
     }
 
 	return 0;

@@ -236,3 +236,22 @@ int32_t ExtRAM::write(uint32_t address, uint8_t *data, uint32_t len)
         return err;
 
 }
+
+int32_t ExtRAM::ezh_write(uint32_t address, uint8_t *data, uint32_t len){
+        SPI8->FIFOCFG |= 3<<16; //*Flush the Tx & Rx buffers
+
+        SPI8->FIFOCFG |= 1; // Enable the fifo
+
+        *spi_fifo_ctrl = (0x1) |
+                         (1<<(SPI_FIFOWR_RXIGNORE_SHIFT-16)) | 
+                         ((7)<<(SPI_FIFOWR_LEN_SHIFT-16));
+
+        *spi_8bit_fifo_wr = PSRAM__WRITE;      while((SPI8->FIFOSTAT & (1<<5)) == 0){}
+        *spi_8bit_fifo_wr =  (uint8_t)((address>>16)&0xff);      while((SPI8->FIFOSTAT & (1<<5)) == 0){}
+        *spi_8bit_fifo_wr  =  (uint8_t)((address>>8)&0xff);      while((SPI8->FIFOSTAT & (1<<5)) == 0){}
+        *spi_8bit_fifo_wr  =  (uint8_t)((address)&0xff);      while((SPI8->FIFOSTAT & (1<<5)) == 0){}
+
+        // Call EZH function
+
+        return 0;
+}
