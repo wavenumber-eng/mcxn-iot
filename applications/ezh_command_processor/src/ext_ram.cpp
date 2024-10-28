@@ -161,8 +161,8 @@ int32_t ExtRAM::write(uint32_t address, uint8_t *data, uint32_t len)
             transactions.   
 
         */
-
-        SPI8->FIFOCFG |= 3<<16; /*Flush the Tx & Rx buffers*/
+/*
+        SPI8->FIFOCFG |= 3<<16; //*Flush the Tx & Rx buffers
 
         SPI8->FIFOCFG |= 1; // Enable the fifo
 
@@ -175,6 +175,7 @@ int32_t ExtRAM::write(uint32_t address, uint8_t *data, uint32_t len)
         *spi_8bit_fifo_wr =  (uint8_t)((address>>16)&0xff);      while((SPI8->FIFOSTAT & (1<<5)) == 0){}
         *spi_8bit_fifo_wr  =  (uint8_t)((address>>8)&0xff);      while((SPI8->FIFOSTAT & (1<<5)) == 0){}
         *spi_8bit_fifo_wr  =  (uint8_t)((address)&0xff);      while((SPI8->FIFOSTAT & (1<<5)) == 0){}
+*/
 
 /*
         for(int i=0;i<len-1;i++)
@@ -192,17 +193,16 @@ int32_t ExtRAM::write(uint32_t address, uint8_t *data, uint32_t len)
       */
 
      
-        /*
+     
         uint8_t tx_cmd_buffer[4] ={PSRAM__WRITE,
                                   (uint8_t)((address>>16)&0xff),
                                   (uint8_t)((address>>8)&0xff),
                                   (uint8_t)((address)&0xff)
-                                  };
-*/
+        };
 
-      //  uint8_t rx_cmd_dummy_buffer[4] ={0,0,0,0}; // needed to deal with the reponse during command phase.
-        
-        /*
+
+    
+    
         struct spi_buf tx_spi_buf[2]=   {
                                             {.buf = (void *)&tx_cmd_buffer, .len = sizeof(tx_cmd_buffer)},
                                             {.buf = data, .len = len} 
@@ -210,34 +210,21 @@ int32_t ExtRAM::write(uint32_t address, uint8_t *data, uint32_t len)
         
 
         struct spi_buf_set tx_spi_buf_set 	= {.buffers = &tx_spi_buf[0], .count = 2};
-        */
-      struct spi_buf tx_spi_buf[1]=   {
-                                        //    {.buf = (void *)&tx_cmd_buffer, .len = sizeof(tx_cmd_buffer)},
-                                          {.buf = data, .len = len} 
-                                 };
+     
+
+     uint8_t rx_cmd_dummy_buffer[4] ={0,0,0,0}; // needed to deal with the reponse during command phase.
         
 
-        //struct spi_buf_set tx_spi_buf_set 	= {.buffers = &tx_spi_buf[0], .count = 2};
-
-        struct spi_buf_set tx_spi_buf_set 	= {.buffers = &tx_spi_buf[0], .count = 1};
-
         //todo - improve this...  switch to te patch spi driver that can do a tx blast
-   /*
+
         struct spi_buf rx_spi_bufs[2] = {
                                             {.buf = rx_cmd_dummy_buffer, .len = sizeof(rx_cmd_dummy_buffer)},
                                             {.buf = NULL, .len = 0}//use the write buffer as dummy rx
                                         };
 
         struct spi_buf_set rx_spi_buf_set	= {.buffers = &rx_spi_bufs[0], .count = 2};
-    */
 
-        struct spi_buf rx_spi_bufs[1] = {
-                                          //  {.buf = rx_cmd_dummy_buffer, .len = sizeof(rx_cmd_dummy_buffer)},
-                                            {.buf = NULL, .len = 0}//use the write buffer as dummy rx
-                                        };
-
-        struct spi_buf_set rx_spi_buf_set	= {.buffers = &rx_spi_bufs[0], .count = 1};
-
+   
 
         err = spi_transceive_dt(&psram_spi_spec, &tx_spi_buf_set, &rx_spi_buf_set);
 
