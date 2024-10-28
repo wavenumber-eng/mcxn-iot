@@ -30,6 +30,7 @@ void OnProjectLoad (void) {
   //
   // User settings
   //
+  Edit.SysVar (VAR_RTT_ENABLED, 1);
   File.Open ("./build/zephyr/zephyr.elf");
 }
 

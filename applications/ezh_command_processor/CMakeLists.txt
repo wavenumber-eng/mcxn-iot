@@ -7,7 +7,8 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(ezh_command_processor)
 
 target_sources(app PRIVATE  src/main.cpp
-                            src/t2.c)
+                            src/t2.c
+                            src/ext_ram.cpp)
 
 target_sources(app PRIVATE ../../../modules/bunny_build/src/bunny_build.c)
 target_sources(app PRIVATE ../../../modules/bunny_build/src/ezh_init.c)

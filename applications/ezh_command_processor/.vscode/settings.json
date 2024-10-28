@@ -11,7 +11,8 @@
         "irq.h": "c",
         "fsl_common.h": "c",
         "ezh_init.h": "c",
-        "bunny_build.h": "c"
+        "bunny_build.h": "c",
+        "lpc55s69_cm33_core0.h": "c"
     },
     "workbench.colorCustomizations": {
         "activityBar.activeBackground": "#5b1942",
