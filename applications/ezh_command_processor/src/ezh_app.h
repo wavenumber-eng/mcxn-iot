@@ -1,11 +1,13 @@
 #include "stdint.h"
 
-
 #pragma once
 
 #ifndef _EZH_APP_H
 #define _EZH_APP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct
 {
@@ -32,6 +34,9 @@ void ezh__send_cmd(uint32_t cmd);
 
 void ezh__execute_command(uint8_t cmd);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

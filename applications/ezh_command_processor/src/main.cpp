@@ -52,7 +52,7 @@ int main(void)
 
     while (1)
     {
-                ezh__execute_command(2);
+        ezh__execute_command(2);
         k_sleep(K_MSEC(100));
 
         ezh__execute_command(1);
