@@ -193,9 +193,15 @@ void ezh_app__toggle1(void)
     E_BCLR_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
     E_BCLR_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
 
-    
-E_LABEL("END");
     E_PER_WRITE(R0, EZH2ARM);               //notify the arm that the command is complete
+
+E_LABEL("END");
+    E_LOAD_IMM(CFS, 0);
+    E_LOAD_SIMM(R0, 0xDB, 24);
+    E_LOAD_SIMM(R1, 0x6D, 16);
+    E_LOAD_SIMM(R2, 0xB6, 8);
+    E_XOR(R0, R0, R1);
+    E_XOR(CFM, R0, R2);
     E_HOLD();
 }
 
@@ -242,7 +248,14 @@ void ezh_app__toggle2(void)
     E_BCLR_IMM(GPO, GPO, EZH_TEST_GPIO_1); // Clear test GPIO
     E_BCLR_IMM(GPO, GPO, EZH_TEST_GPIO_2); // Clear test GPIO
     
+    E_PER_WRITE(R0, EZH2ARM);               //notify the arm that the command is complete
+    
 E_LABEL("END");
-    E_PER_WRITE(R0, EZH2ARM);           // Notify the arm that the command is complete
+    E_LOAD_IMM(CFS, 0);
+    E_LOAD_SIMM(R0, 0xDB, 24);
+    E_LOAD_SIMM(R1, 0x6D, 16);
+    E_LOAD_SIMM(R2, 0xB6, 8);
+    E_XOR(R0, R0, R1);
+    E_XOR(CFM, R0, R2);
     E_HOLD();
 }
