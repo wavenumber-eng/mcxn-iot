@@ -181,7 +181,6 @@ int main(void)
     gpio_pin_configure_dt(&io_dir_pin, GPIO_OUTPUT);
     gpio_pin_set_dt(&io_dir_pin, 1);
 
-
     LOG_DBG("init psram ....");
    // ext_ram.Init();
     LOG_DBG("...done");
@@ -190,40 +189,13 @@ int main(void)
 
   //  ext_ram.RDID();
 
-#if 0
-    IOCON->PIO[1][2] = ((IOCON->PIO[1][2] &
-                         /* Mask bits to zero which are setting */
-                         (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK)))
 
-                        /* Selects pin function.
-                         * : PORT12 (pin G12) is configured as HS_SPI_SCK. */
-                        | IOCON_PIO_FUNC(PIO1_2_FUNC_ALT6)
-
-                        /* Select Digital mode.
-                         * : Enable Digital mode.
-                         * Digital input is enabled. */
-                        | IOCON_PIO_DIGIMODE(PIO1_2_DIGIMODE_DIGITAL));
-
-    IOCON->PIO[1][3] = ((IOCON->PIO[1][3] &
-                         /* Mask bits to zero which are setting */
-                         (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK)))
-
-                        /* Selects pin function.
-                         * : PORT13 (pin G13) is configured as HS_SPI_MISO. */
-                        | IOCON_PIO_FUNC(PIO1_3_FUNC_ALT6)
-
-                        /* Select Digital mode.
-                         * : Enable Digital mode.
-                         * Digital input is enabled. */
-                        | IOCON_PIO_DIGIMODE(PIO1_3_DIGIMODE_DIGITAL));
-#endif
-
- spi_master_config_t SPI_Config = {0};
+   spi_master_config_t SPI_Config = {0};
 
 
     	CLOCK_AttachClk(kMAIN_CLK_to_HSLSPI);
 
-    	/* reset FLEXCOMM for SPI */
+    // reset FLEXCOMM for SPI 
     	RESET_PeripheralReset(kHSLSPI_RST_SHIFT_RSTn);
 
     	SPI_MasterGetDefaultConfig(&SPI_Config);
@@ -233,15 +205,14 @@ int main(void)
     	SPI_Config.phase =(spi_clock_phase_t) 0;
     	SPI_Config.polarity = (spi_clock_polarity_t) 0;
     	SPI_Config.dataWidth = kSPI_Data8Bits;
-    	SPI_Config.baudRate_Bps = 50000000;
+    	SPI_Config.baudRate_Bps = 10000000;
 
     	SPI_MasterInit(SPI8,&SPI_Config, CLOCK_GetHsLspiClkFreq());
 
-    	SPI8->FIFOCFG |= 3<<16; /*Flush the Tx & Rx buffers*/
+    //	SPI8->FIFOCFG |= 3<<16; //*Flush the Tx & Rx buffers*
 
-    	SPI8->FIFOCFG |= 1; // Enable the fifo
+    //	SPI8->FIFOCFG |= 1; // Enable the fifo
 
-    	//(SPI8->FIFOWR) = 0xAA | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) | 1<<SPI_FIFOWR_EOT_SHIFT;
     while (1)
     {   
 //        ezh__execute_command(2);
@@ -250,17 +221,12 @@ int main(void)
 //        ezh__execute_command(1);
 
 
-    	for(int i=0;i<(240*240);i++)
-    	{
-    		/* wait for the response*/
-    		while((SPI8->FIFOSTAT & 1<<5) == 0)
-    		{
-    		}
-
-    		(SPI8->FIFOWR) = 0xAA | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
-    	}
-
- //     ext_ram.ezh_write(0x112233, nullptr, 0);
+//(SPI8->FIFOWR) = 0xAA | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
+//(SPI8->FIFOWR) = 0xAA | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
+//(SPI8->FIFOWR) = 0xAA | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
+//(SPI8->FIFOWR) = 0xAA | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
+    
+     ext_ram.ezh_write(0x112233, nullptr, 0);
         k_sleep(K_MSEC(250));
     }
 
