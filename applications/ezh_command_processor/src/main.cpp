@@ -177,6 +177,9 @@ LOG_MODULE_REGISTER(main);
 
 static struct gpio_dt_spec io_dir_pin = GPIO_DT_SPEC_GET(DT_ALIAS(io_dir_pin), gpios);
 
+#define TEST_ARRAY_SIZE	100
+uint32_t spi_test_array [TEST_ARRAY_SIZE];
+
 int main(void)
 {
 
@@ -212,6 +215,11 @@ int main(void)
     	SPI_MasterInit(SPI8,&SPI_Config, CLOCK_GetHsLspiClkFreq());
 
 
+	for(uint32_t i = 0; i < TEST_ARRAY_SIZE; i++)
+	{
+		spi_test_array[i] = i;
+	}
+
     while (1)
     {   
 //        ezh__execute_command(TOGGLE1_APP);
@@ -219,7 +227,7 @@ int main(void)
 //
 //        ezh__execute_command(TOGGLE2_APP);
     
-     	ext_ram.ezh_write(0x00112233, nullptr, 0);
+     	ext_ram.ezh_write(0x00112233, spi_test_array, TEST_ARRAY_SIZE);
         k_sleep(K_MSEC(250));
     }
 

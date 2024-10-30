@@ -11,12 +11,10 @@ extern "C" {
 
 typedef struct
 {
-    uint32_t command;
-    uint32_t * data_buffer;
+    uint32_t cmd_and_addr;          // (cmd(8bits) << 24) | add(24bits)
     uint32_t data_buffer_length;
-    uint32_t target_address;
-
-} EZH_CMD_PROCESSOR_PARAMS;
+    uint32_t * data_buffer;
+} EZH_spi_wr_params_t;
 
 typedef struct _EZHPWM_Para
 {
@@ -34,12 +32,9 @@ typedef enum
 } ezh_applications_e;
 
 
-extern EZHPWM_Para ezh_parameters;
-
-
 void ezh_app(void);
 void ezh__start_app();
-void ezh__execute_command(uint8_t cmd);
+void ezh__execute_command(uint8_t cmd, EZHPWM_Para * ezh_parameters);
 
 #ifdef __cplusplus
 }

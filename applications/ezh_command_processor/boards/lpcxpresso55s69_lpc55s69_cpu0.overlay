@@ -12,15 +12,14 @@
         };
 };
 
-
-&sram {
-    sramx: memory@4000000 {
-		compatible =  "zephyr,memory-region", "mmio-sram";
-		reg = <0x4000000 DT_SIZE_K(32)>;
-        zephyr,memory-region = "SRAMX";
-        zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_RAM) )>;
-	};
-};
+//&sram {
+//    sramx: memory@4000000 {
+//        compatible =  "zephyr,memory-region", "mmio-sram";
+//        reg = <0x04000000 DT_SIZE_K(32)>;
+//        zephyr,memory-region = "SRAMX";
+//        zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_IO) )>;
+//    };
+//};
 
 &pinctrl {
 
@@ -47,4 +46,11 @@
 			gpios = <&gpio1 1 GPIO_ACTIVE_HIGH>;
 		};
     };
+
+    sram_ezh0: memory@4000000{
+        compatible = "zephyr,memory-region", "mmio-sram";
+        reg = <0x4000000 DT_SIZE_K(32)>;
+        zephyr,memory-region="SRAMX_EZH";
+        zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_IO))>;
+	 };
 };

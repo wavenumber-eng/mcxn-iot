@@ -9,6 +9,11 @@
 #include "fsl_spi.h"
 LOG_MODULE_REGISTER(psram, LOG_LEVEL_DBG);
 
+
+uint32_t ezh_stack[32];
+uint32_t ezh_debug_params[10];
+EZHPWM_Para ezh_parameters;
+
 ExtRAM::ExtRAM() : m_first(true)  {} 
 
 void ExtRAM::Init()
@@ -237,15 +242,35 @@ int32_t ExtRAM::write(uint32_t address, uint8_t *data, uint32_t len)
 
 }
 
-int32_t ExtRAM::ezh_write(uint32_t address, uint8_t *data, uint32_t len)
-{
 
+EZH_spi_wr_params_t ezh_cmd_params;
+
+int32_t ExtRAM::ezh_write(uint32_t address, uint32_t *data, uint32_t len)
+{
+    ezh_cmd_params.cmd_and_addr = (((uint8_t)PSRAM__WRITE) << 24) | (address & 0xffffff);
+    ezh_cmd_params.data_buffer_length = len;
+    ezh_cmd_params.data_buffer = data;
+    
 //    (SPI8->FIFOWR) = 0x11 | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
 //    (SPI8->FIFOWR) = 0x22 | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
 //    (SPI8->FIFOWR) = 0x33 | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
 //    (SPI8->FIFOWR) = 0x44 | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
 
 //    ezh_parameters.p_buffer[0] = address;
-    ezh__execute_command(SPI_WRITE_APP);
+
+//    ezh_debug_params[0] = 0x02112233;
+//    ezh_debug_params[1] = 8;
+//    ezh_debug_params[2] = 2;
+//    ezh_debug_params[3] = 3;
+//    ezh_debug_params[4] = 4;
+//    ezh_debug_params[5] = 5;
+//    ezh_debug_params[6] = 6;
+//    ezh_debug_params[7] = 7;
+//    ezh_debug_params[8] = 8;
+//    ezh_debug_params[9] = 9;
+
+    ezh_parameters.coprocessor_stack = (void *)ezh_stack;
+    ezh_parameters.p_buffer = (uint32_t *)(&ezh_cmd_params);
+    ezh__execute_command(SPI_WRITE_APP, &ezh_parameters);
     return 0;
 }
