@@ -1,0 +1,72 @@
+/*
+ * Copyright (c) 2019, NXP
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+
+#include <nxp/nxp_lpc55S6x_ns.dtsi>
+#include "gibbon_d.dtsi"
+#include <zephyr/dt-bindings/pwm/pwm.h>
+
+/ {
+    model = "gibbon_d cpu1";
+    compatible = "nxp,lpc55xxx", "nxp,lpc";
+
+    aliases{
+        spi-1 = &flexcomm1;
+    };
+
+    cpus {
+        /delete-node/ cpu@0;
+    };
+
+    chosen {
+        zephyr,sram = &sram1;
+        zephyr,flash = &flash0;
+        zephyr,code-partition = &app_cpu1_partition;
+        zephyr,display = &WV015GEM;
+    };
+
+    ipc0: ipc0 {
+        compatible = "te,ipc-ring";
+        tx-memory-region = <&sram_ipc1>;
+        rx-memory-region = <&sram_ipc0>;
+        ipm = <&mailbox0>;
+        status = "okay";
+    };
+ };
+
+
+&flexcomm1 {
+	status="okay";
+};
+
+&sram1 {
+	compatible = "mmio-sram";
+	reg = <0x20020000 DT_SIZE_K(128)>;
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&gpio1 {
+	status = "okay";
+};
+
+&pint {
+	num-lines = <1>;
+	first-input = <7>;
+	interrupts = <35 2>;
+};
+
+&dma1 {
+    status = "okay";
+};
+
+&mailbox0 {
+    status = "okay";
+    /delete-property/ resets;
+};

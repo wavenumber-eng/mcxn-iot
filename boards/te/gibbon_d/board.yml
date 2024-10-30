@@ -1,0 +1,8 @@
+board:
+  name: gibbon_d
+  vendor: nxp
+  socs:
+  - name: lpc55s69
+    variants:
+    - name: "ns"
+      cpucluster: 'cpu0'

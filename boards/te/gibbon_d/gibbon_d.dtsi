@@ -1,0 +1,371 @@
+ #include "gibbon_d-pinctrl.dtsi"
+ #include <zephyr/dt-bindings/adc/mcux-lpadc.h>
+ #include <zephyr/dt-bindings/input/input-event-codes.h>
+ #include <zephyr/dt-bindings/memory-attr/memory-attr-arm.h>
+
+ / {
+    aliases{
+         spi-1 = &flexcomm1;
+     };
+
+     reserved-memory {
+         #address-cells = <1>;
+         #size-cells = <1>;
+         ranges;
+
+         /* RAM split used by TFM */
+         secure_ram: partition@20000000 {
+             label = "secure-memory";
+             reg = <0x20000000 DT_SIZE_K(136)>;
+         };
+
+         non_secure_ram: partition@20022000 {
+             label = "non-secure-memory";
+             reg = <0x20022000 DT_SIZE_K(136)>;
+         };
+     };
+
+     sram_ipc0: memory@4000000{
+        compatible = "zephyr,memory-region", "mmio-sram";
+        reg = <0x4000000 DT_SIZE_K(1)>;
+        zephyr,memory-region="SRAMX_IPC0";
+        zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_IO))>;
+	 };
+
+     sram_ipc1: memory@4000400{
+        compatible = "zephyr,memory-region", "mmio-sram";
+        reg = <0x4000400 DT_SIZE_K(1)>;
+        zephyr,memory-region="SRAMX_IPC1";
+        zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_IO))>;
+     };
+
+     sramxx: memory@4000800{
+        compatible = "zephyr,memory-region", "mmio-sram";
+        reg = <0x4000800 DT_SIZE_K(29)>;
+        zephyr,memory-region="SRAMXX";
+        zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_IO))>;
+     };
+
+     gpio_keys {
+         compatible = "gpio-keys";
+         sw1: sw1 {
+             label = "SYS_SW";
+             gpios = <&gpio0 5 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+             zephyr,code = <INPUT_KEY_1>;
+         };
+
+         sw2: sw2 {
+             label = "SW2";
+             gpios = <&gpio1 8 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+             zephyr,code = <INPUT_KEY_2>;
+         };
+
+         sw3: sw3 {
+             label = "SW3";
+             gpios = <&gpio1 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+             zephyr,code = <INPUT_KEY_3>;
+         };
+
+         sw4: sw4 {
+             label = "SW4";
+             gpios = <&gpio0 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+             zephyr,code = <INPUT_KEY_4>;
+         };
+
+         sw5: sw5 {
+             label = "SW5";
+             gpios = <&gpio1 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+             zephyr,code = <INPUT_KEY_5>;
+         };
+
+         sw6: sw6{
+             label = "SW6";
+             gpios = <&gpio0 28 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+             zephyr,code = <INPUT_KEY_6>;
+         };
+     };
+
+     gpios {
+             compatible = "gpio-keys";
+
+             display_te:display_te{ 		/* in */
+                 gpios = <&gpio0 17 GPIO_ACTIVE_HIGH>;
+                 label = "LPC_TO_DISP_TE";
+             };
+
+             fusb_int:fusb_int_n{		/* in */
+                 gpios = <&gpio0 27 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+                 label = "FUSB_INT_N";
+             };
+
+             dac_lineout_int:dac_lineout_int{ 		/* in */
+                 gpios = <&gpio1 19 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+                 label = "DAC_LINEOUT_INT";
+             };
+
+             dac_phones_int:dac_phones_int{ 		/* in */
+                 gpios = <&gpio1 26 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+                 label = "DAC_PHONES_INT";
+             };
+
+             trig_in:trig_in{ 		/* in */
+                 gpios = <&gpio1 22 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+                 label = "TRIG_IN";
+             };
+
+             trig_in_detect:trig_in_detect{ 		/* in */
+                 gpios = <&gpio1 29 GPIO_ACTIVE_HIGH>;
+                 label = "TRIG_IN_DETECT";
+             };
+
+             line_in1_detect:line_in1_detect{ 		/* in */
+                 gpios = <&gpio1 17 GPIO_ACTIVE_HIGH>;
+                 label = "IN1_BRK";
+             };
+
+             line_in2_detect:line_in2_detect{ 		/* in */
+                 gpios = <&gpio1 14 GPIO_ACTIVE_HIGH>;
+                 label = "IN2_BRK";
+             };
+
+             ak5704_en: ak5704_en{		/* out */
+                 gpios = <&gpio0 0 GPIO_ACTIVE_HIGH>;
+                 label = "AK5704_EN";
+             };
+
+             dac_lineout_reset: dac_lineout_reset{		/* out */
+                 gpios = <&gpio1 12 (GPIO_ACTIVE_LOW | GPIO_PULL_DOWN)>;
+                 label = "DAC_LINEOUT_RESET";
+             };
+
+             dac_phones_reset: dac_phones_reset{		/* out */
+                 gpios = <&gpio0 14 (GPIO_ACTIVE_LOW | GPIO_PULL_DOWN)>;
+                 label = "DAC_PHONES_RESET";
+             };
+
+             adc_muxx_en: adc_muxx_en{		/* out */
+                 gpios = <&gpio0 1 GPIO_ACTIVE_LOW>;
+                 label = "POT_POWER_EN";
+             };
+
+             adc_muxx_s0: adc_muxx_s0{		/* out */
+                 gpios = <&gpio0 30 GPIO_ACTIVE_HIGH>;
+                 label = "ADC_MUXx_S0";
+             };
+
+             adc_muxx_s1: adc_muxx_s1{		/* out */
+                 gpios = <&gpio0 19 GPIO_ACTIVE_HIGH>;
+                 label = "ADC_MUXx_S1";
+             };
+
+             adc_muxx_s2: adc_muxx_s2{		/* out */
+                 gpios = <&gpio1 20 GPIO_ACTIVE_HIGH>;
+                 label = "ADC_MUXx_S2";
+             };
+
+             dev_gpio0:dev_gpio0{		/* out */
+                 gpios = <&gpio1 16 GPIO_ACTIVE_HIGH>;
+                 label = "GPIO0";
+             };
+
+             dev_gpio1: dev_gpio1{		/* out */
+                 gpios = <&gpio0 3 GPIO_ACTIVE_HIGH>;
+                 label = "GPIO1";
+             };
+
+            boost_pwm_mode: boost_pwm-mode{		/* out */
+                 gpios = <&gpio1 31 GPIO_ACTIVE_HIGH>;
+                 label = "BOOST_PWM_MODE";
+             };
+
+         };
+};
+
+&flash0 {
+     partitions {
+         compatible = "fixed-partitions";
+         #address-cells = <1>;
+         #size-cells = <1>;
+
+         bootloader_a_header_partition: partition@1000 {
+                 label = "bootloader_a_header_partition";
+                 reg = <0x1000 0x200>;
+         };
+
+         bootloader_b_header_partition: partition@1200 {
+                 label = "bootloader_b_header_partition";
+                 reg = <0x1200 0x200>;
+         };
+
+         app_header_partition: partition@1400 {
+                 label = "app_header_partition";
+                 reg = <0x1400 0x200>;
+         };
+
+         metadata_partition: partition@1600 {
+                 label = "metadata_partition";
+                 reg = <0x1600 0x200>;
+         };
+
+         bootloader_a_partition: partition@2000 {
+                 label = "bootloader_a_partition";
+                 reg = <0x2000 0x8000>;
+         };
+
+         bootloader_b_partition: partition@a000 {
+                 label = "bootloader_b_partition";
+                 reg = <0xa000 0x8000>;
+         };
+
+         app_partition: partition@12000 {
+                 label = "app_partition";
+                 reg = <0x12000 0x50000>;
+         };
+
+         app_cpu1_partition: partition@62000 {
+                 label = "app_cpu1_partition";
+                 reg = <0x62000 0x30000>;
+         };
+     };
+};
+
+&dma0 {
+    interrupts = <1 6>;
+};
+
+&flexcomm0 {
+    pinctrl-0 = <&pinmux_flexcomm0_i2s>;
+    pinctrl-names = "default";
+    compatible = "te,lpc-i2s";
+    interrupts = <14 1>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    dmas = <&dma0 4>;
+    dma-names = "rx";
+    /delete-property/ resets;
+};
+
+&flexcomm1 {
+     compatible = "nxp,lpc-spi";
+     pinctrl-0 = <&pinmux_flexcomm1_spi>;
+     pinctrl-names = "default";
+     clock-frequency= <32000000>;
+     #address-cells = <1>;
+     #size-cells = <0>;
+     dmas = <&dma1 6>, <&dma1 7>;
+     dma-names = "rx", "tx";
+         WV015GEM: st7789p@0 {
+             compatible = "sitronix,st7789p";
+             spi-max-frequency = <32000000>;
+             cmd-data-gpios = <&gpio0 23 GPIO_ACTIVE_LOW>;
+             reset-gpios = <&gpio0 16 GPIO_ACTIVE_LOW>;
+             width = <172>;
+             height = <320>;
+             reg = <0>;
+             x-offset = <34>;
+             y-offset = <0>;
+             vcom = <0x27>;
+             gctrl = <0x46>;
+             vrhs = <0x21>;
+             vdvs = <0x20>;
+             mdac = <0xD0>;
+             gamma = <0x01>;
+             colmod = <0x05>;
+             lcm = <0x2c>;
+             porch-param = [0c 0c 00 33 33];
+             cmd2en-param = [5a 69 02 01];
+             pwctrl1-param = [a4 a1];
+             pvgam-param = [F0 00 06 05 04 15 31 44 46 36 12 13 2B 31];
+             nvgam-param = [F0 0C 11 10 10 09 31 33 46 37 14 14 2C 32];
+             ram-param = [00 F8];
+             rgb-param = [CD 08 14];
+             frame-rate = <0x0b>;
+             te-on=<0x01>;
+         };
+};
+
+
+&flexcomm4 {
+    compatible = "te,lpc-i2s";
+    interrupts = <18 1>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    dmas = <&dma0 12>;
+    dma-names = "rx";
+    /delete-property/ resets;
+};
+
+fc5_i2c: &flexcomm5 {
+     pinctrl-0 = <&pinmux_flexcomm5_i2c>;
+     pinctrl-names = "default";
+     compatible = "nxp,lpc-i2c";
+     clock-frequency = <I2C_BITRATE_FAST>;
+     #address-cells = <1>;
+     #size-cells = <0>;
+};
+
+&flexcomm7 {
+    pinctrl-0 = <&pinmux_flexcomm7_i2s>;
+    pinctrl-names = "default";
+    compatible = "te,lpc-i2s";
+    interrupts = <21 1>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+    dmas = <&dma0 19>;
+    dma-names = "tx";
+    /delete-property/ resets;
+};
+
+
+&hs_lspi {
+     pinctrl-0 = <&pinmux_hs_lspi_default>;
+     pinctrl-names = "default";
+};
+
+&sc_timer {
+     pinctrl-0 = <&pinmux_sctimer_default>;
+     pinctrl-names = "default";
+};
+
+&adc0 {
+	pinctrl-0 = <&pinmux_lpadc0>;
+	pinctrl-names = "default";
+	#address-cells = <1>;
+	#size-cells = <0>;
+    channel@0 {
+          reg = <0>;
+          zephyr,gain = "ADC_GAIN_1";
+          zephyr,reference = "ADC_REF_EXTERNAL0";
+          zephyr,vref-mv = <1800>;
+          zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+          zephyr,resolution = <16>;
+          zephyr,input-positive = <MCUX_LPADC_CH3B>;
+     };
+     channel@1 {
+          reg = <1>;
+          zephyr,gain = "ADC_GAIN_1";
+          zephyr,reference = "ADC_REF_EXTERNAL0";
+          zephyr,vref-mv = <1800>;
+          zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+          zephyr,resolution = <16>;
+          zephyr,input-positive = <MCUX_LPADC_CH4B>;
+          };
+     channel@2 {
+          reg = <2>;
+          zephyr,gain = "ADC_GAIN_1";
+          zephyr,reference = "ADC_REF_EXTERNAL0";
+          zephyr,vref-mv = <1800>;
+          zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+          zephyr,resolution = <16>;
+          zephyr,input-positive = <MCUX_LPADC_CH3A>;
+          };
+     channel@4 {
+          reg = <2>;
+          zephyr,gain = "ADC_GAIN_1";
+          zephyr,reference = "ADC_REF_EXTERNAL0";
+          zephyr,vref-mv = <1800>;
+          zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+          zephyr,resolution = <16>;
+          zephyr,input-positive = <MCUX_LPADC_CH2A>;
+          };
+};

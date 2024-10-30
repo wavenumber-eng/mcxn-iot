@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.20.0)
 
+set(BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_VERBOSE_MAKEFILE ON)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(app)
