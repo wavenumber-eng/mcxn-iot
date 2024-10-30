@@ -1,9 +1,24 @@
+/ {
+
+    aliases {
+		io-dir-pin = &io_dir_pin;
+	};
+
+    gpio_keys{
+        io_dir_pin: P11 {
+			gpios = <&gpio1 1 GPIO_ACTIVE_HIGH>;
+		};
+    };
+};
+
 &hs_lspi
 {
     status = "okay";
 
     pinctrl-0 = <&pinmux_hs_lspi_default>;
     pinctrl-names = "default";
+
+    /delete-node/ psram@1;
 
     psram_spi: psram@0 {
         compatible = "vnd,spi-device";
@@ -12,15 +27,6 @@
         };
 };
 
-
-&sram {
-    sramx: memory@4000000 {
-		compatible =  "zephyr,memory-region", "mmio-sram";
-		reg = <0x4000000 DT_SIZE_K(32)>;
-        zephyr,memory-region = "SRAMX";
-        zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_RAM) )>;
-	};
-};
 
 &pinctrl {
 
@@ -33,18 +39,5 @@
             bias-pull-up;
             slew-rate = "standard";
         };
-    };
-};
-
-/ {
-
-    aliases {
-		io-dir-pin = &io_dir_pin;
-	};
-
-    gpio_keys{
-        io_dir_pin: P11 {
-			gpios = <&gpio1 1 GPIO_ACTIVE_HIGH>;
-		};
     };
 };

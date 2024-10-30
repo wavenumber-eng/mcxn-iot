@@ -15,14 +15,9 @@ K_THREAD_DEFINE(t2_thread, CONFIG__T2_TH_STACK_SIZE,
 LOG_MODULE_REGISTER(t2);
 
 
-// GPIO configurations
-#define LED0_NODE DT_ALIAS(led0)
-static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
-
 
 void t2_thread_task(void *, void *, void *)
 {
-//    gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE);
 
     while (1)
     {
@@ -32,7 +27,6 @@ void t2_thread_task(void *, void *, void *)
     while (1)
     {
         LOG_INF("Hello from T2!");
-        gpio_pin_toggle_dt(&led);
         k_sleep(K_MSEC(500));
     }
 }

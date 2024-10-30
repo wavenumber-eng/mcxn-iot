@@ -12,7 +12,10 @@
         "fsl_common.h": "c",
         "ezh_init.h": "c",
         "bunny_build.h": "c",
-        "lpc55s69_cm33_core0.h": "c"
+        "lpc55s69_cm33_core0.h": "c",
+        "stdbool.h": "c",
+        "fsl_clock.h": "c",
+        "fsl_sysctl.h": "c"
     },
     "workbench.colorCustomizations": {
         "activityBar.activeBackground": "#5b1942",

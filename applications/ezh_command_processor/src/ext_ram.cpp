@@ -5,8 +5,8 @@
 
 #include "fsl_common.h"
 #include "fsl_clock.h"
+#include "ezh_app.h"
 #include "fsl_spi.h"
-
 LOG_MODULE_REGISTER(psram, LOG_LEVEL_DBG);
 
 ExtRAM::ExtRAM() : m_first(true)  {} 
@@ -239,20 +239,13 @@ int32_t ExtRAM::write(uint32_t address, uint8_t *data, uint32_t len)
 
 int32_t ExtRAM::ezh_write(uint32_t address, uint8_t *data, uint32_t len)
 {
-        SPI8->FIFOCFG |= 3<<16; //*Flush the Tx & Rx buffers
 
-        SPI8->FIFOCFG |= 1; // Enable the fifo
+//    (SPI8->FIFOWR) = 0x11 | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
+//    (SPI8->FIFOWR) = 0x22 | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
+//    (SPI8->FIFOWR) = 0x33 | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
+//    (SPI8->FIFOWR) = 0x44 | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
 
-//        *spi_fifo_ctrl = (0x1) |
-//                         (1<<(SPI_FIFOWR_RXIGNORE_SHIFT-16)) | 
-//                         ((7)<<(SPI_FIFOWR_LEN_SHIFT-16));
-
-        *spi_8bit_fifo_wr = PSRAM__WRITE;      while((SPI8->FIFOSTAT & (1<<5)) == 0){}
-        *spi_8bit_fifo_wr =  (uint8_t)((address>>16)&0xff);      while((SPI8->FIFOSTAT & (1<<5)) == 0){}
-        *spi_8bit_fifo_wr  =  (uint8_t)((address>>8)&0xff);      while((SPI8->FIFOSTAT & (1<<5)) == 0){}
-        *spi_8bit_fifo_wr  =  (uint8_t)((address)&0xff);      while((SPI8->FIFOSTAT & (1<<5)) == 0){}
-
-        // Call EZH function
-
-        return 0;
+//    ezh_parameters.p_buffer[0] = address;
+    ezh__execute_command(SPI_WRITE_APP);
+    return 0;
 }

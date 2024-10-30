@@ -7,11 +7,13 @@
 #include "ext_ram.h"
 #include "fsl_common.h"
 #include "fsl_clock.h"
-#include "fsl_spi.h"
 #include "fsl_common.h"
 #include "fsl_clock.h"
 #include "fsl_spi.h"
 #include "fsl_iocon.h"
+#include <fsl_sysctl.h>
+
+
 #define IO_DIR_1_PIN    1
 
 
@@ -209,24 +211,15 @@ int main(void)
 
     	SPI_MasterInit(SPI8,&SPI_Config, CLOCK_GetHsLspiClkFreq());
 
-//    	SPI8->FIFOCFG |= 3<<16; //*Flush the Tx & Rx buffers*
-//
-//    	SPI8->FIFOCFG |= 1; // Enable the fifo
 
     while (1)
     {   
-//        ezh__execute_command(2);
+//        ezh__execute_command(TOGGLE1_APP);
 //        k_sleep(K_MSEC(100));
 //
-//        ezh__execute_command(1);
-
-
-    (SPI8->FIFOWR) = 0xAA | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
-    (SPI8->FIFOWR) = 0xAA | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
-    (SPI8->FIFOWR) = 0xAA | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
-    (SPI8->FIFOWR) = 0xAA | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
+//        ezh__execute_command(TOGGLE2_APP);
     
-//     ext_ram.ezh_write(0x112233, nullptr, 0);
+     	ext_ram.ezh_write(0x00112233, nullptr, 0);
         k_sleep(K_MSEC(250));
     }
 
