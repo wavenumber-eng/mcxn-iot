@@ -177,7 +177,7 @@ LOG_MODULE_REGISTER(main);
 
 static struct gpio_dt_spec io_dir_pin = GPIO_DT_SPEC_GET(DT_ALIAS(io_dir_pin), gpios);
 
-#define TEST_ARRAY_SIZE	100
+#define TEST_ARRAY_SIZE	10
 uint32_t spi_test_array [TEST_ARRAY_SIZE];
 
 int main(void)
@@ -227,7 +227,8 @@ int main(void)
 //
 //        ezh__execute_command(TOGGLE2_APP);
     
-     	ext_ram.ezh_write(0x00112233, spi_test_array, TEST_ARRAY_SIZE);
+//     	ext_ram.ezh_write(0x00112233, spi_test_array, TEST_ARRAY_SIZE);
+		ext_ram.ezh_rdid();
         k_sleep(K_MSEC(250));
     }
 

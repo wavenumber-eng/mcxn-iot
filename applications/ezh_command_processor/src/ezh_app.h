@@ -9,12 +9,24 @@
 extern "C" {
 #endif
 
+#define SPI_RD_MAX_LENGTH   128
+
 typedef struct
 {
     uint32_t cmd_and_addr;          // (cmd(8bits) << 24) | add(24bits)
     uint32_t data_buffer_length;
     uint32_t * data_buffer;
 } EZH_spi_wr_params_t;
+
+typedef struct
+{
+    uint32_t cmd_and_addr;          // (cmd(8bits) << 24) | add(24bits)
+    uint32_t wait_cycles;
+    uint32_t rx_buffer_length;
+    uint32_t * rx_buffer_ptr;
+
+} EZH_spi_rd_params_t;
+
 
 typedef struct _EZHPWM_Para
 {
@@ -27,6 +39,7 @@ typedef enum
     TOGGLE1_APP,
     TOGGLE2_APP,
     SPI_WRITE_APP,
+    SPI_READ_APP,
 
     EZH_APP_QTY,
 } ezh_applications_e;

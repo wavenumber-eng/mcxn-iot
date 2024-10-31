@@ -9,10 +9,13 @@
 #include "fsl_spi.h"
 LOG_MODULE_REGISTER(psram, LOG_LEVEL_DBG);
 
-
+// This variables must be global
 uint32_t ezh_stack[32];
 uint32_t ezh_debug_params[10];
 EZHPWM_Para ezh_parameters;
+EZH_spi_wr_params_t ezh_spi_wr_params;
+EZH_spi_rd_params_t ezh_spi_rd_params;
+
 
 ExtRAM::ExtRAM() : m_first(true)  {} 
 
@@ -243,34 +246,46 @@ int32_t ExtRAM::write(uint32_t address, uint8_t *data, uint32_t len)
 }
 
 
-EZH_spi_wr_params_t ezh_cmd_params;
 
 int32_t ExtRAM::ezh_write(uint32_t address, uint32_t *data, uint32_t len)
 {
-    ezh_cmd_params.cmd_and_addr = (((uint8_t)PSRAM__WRITE) << 24) | (address & 0xffffff);
-    ezh_cmd_params.data_buffer_length = len;
-    ezh_cmd_params.data_buffer = data;
-    
-//    (SPI8->FIFOWR) = 0x11 | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
-//    (SPI8->FIFOWR) = 0x22 | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
-//    (SPI8->FIFOWR) = 0x33 | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
-//    (SPI8->FIFOWR) = 0x44 | SPI_FIFOWR_LEN(8-1) | (1<<SPI_FIFOWR_RXIGNORE_SHIFT) ;
-
-//    ezh_parameters.p_buffer[0] = address;
-
-//    ezh_debug_params[0] = 0x02112233;
-//    ezh_debug_params[1] = 8;
-//    ezh_debug_params[2] = 2;
-//    ezh_debug_params[3] = 3;
-//    ezh_debug_params[4] = 4;
-//    ezh_debug_params[5] = 5;
-//    ezh_debug_params[6] = 6;
-//    ezh_debug_params[7] = 7;
-//    ezh_debug_params[8] = 8;
-//    ezh_debug_params[9] = 9;
+    ezh_spi_wr_params.cmd_and_addr = (((uint8_t)PSRAM__WRITE) << 24) | (address & 0xffffff);
+    ezh_spi_wr_params.data_buffer_length = len;
+    ezh_spi_wr_params.data_buffer = data;
 
     ezh_parameters.coprocessor_stack = (void *)ezh_stack;
-    ezh_parameters.p_buffer = (uint32_t *)(&ezh_cmd_params);
+    ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_wr_params);
     ezh__execute_command(SPI_WRITE_APP, &ezh_parameters);
+
+    // Probably later we can return the number of words/bytes written
+    return 0;
+}
+
+
+/*
+    NOTES:
+    1. Run it as the first operation after power up and before any other commands being executed. 
+
+*/
+uint8_t rx_buffer[SPI_RD_MAX_LENGTH];
+
+int32_t ExtRAM::ezh_rdid()
+{
+    /*
+            1  byte command, 3 bytes dummy address and 2 bytes for the response
+    */
+//    uint8_t tx_buffer[6] ={PSRAM__RDID,0,0,0,0,0};
+//    uint8_t rx_buffer[6] ={0,0,0,0,0,0};
+        
+    ezh_spi_rd_params.cmd_and_addr =  (PSRAM__RDID << 24) ;       
+    ezh_spi_rd_params.wait_cycles =  2; // wait 2-bytes time
+    ezh_spi_rd_params.rx_buffer_length = 6; // length in bytes
+    ezh_spi_rd_params.rx_buffer_ptr = (uint32_t *)(&rx_buffer[0]);
+
+
+    ezh_parameters.coprocessor_stack = (void *)ezh_stack;
+    ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_rd_params);
+    ezh__execute_command(SPI_READ_APP, &ezh_parameters);
+
     return 0;
 }

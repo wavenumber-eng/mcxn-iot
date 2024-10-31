@@ -17,6 +17,7 @@ uint32_t test_val = 0;
 __attribute((section("SRAMX_EZH"))) uint32_t my_ezh_program1[128]; // Todo relocate into fast SRAMX - no contention 
 __attribute((section("SRAMX_EZH"))) uint32_t my_ezh_program2[128]; // Todo relocate into fast SRAMX - no contention 
 __attribute((section("SRAMX_EZH"))) uint32_t my_ezh_program3[128]; // Todo relocate into fast SRAMX - no contention 
+__attribute((section("SRAMX_EZH"))) uint32_t my_ezh_program4[128]; // Todo relocate into fast SRAMX - no contention 
 #elif defined (CONFIG_BOARD_FRDM_MCXN947_MCXN947_CPU0)
 __attribute((section("SRAM1"))) uint32_t my_ezh_program1[128]; // Todo relocate into fast SRAMX - no contention 
 __attribute((section("SRAM1"))) uint32_t my_ezh_program2[128]; // Todo relocate into fast SRAMX - no contention 
@@ -26,7 +27,7 @@ __attribute((section("SRAM1"))) uint32_t my_ezh_program3[512]; // Todo relocate 
 void ezh_app__toggle1(void);
 void ezh_app__toggle2(void);
 void ezh_app__spi_wr(void);
-  
+void ezh_app__spi_rd(void);
 
 #define EZH_TEST_GPIO_1 24
 #define EZH_TEST_GPIO_2 25
@@ -119,6 +120,13 @@ void ezh__start_app()
     bunny_build(&my_ezh_program3[0],
                 sizeof(my_ezh_program3),
                 ezh_app__spi_wr);
+
+
+    LOG_INF("\n\nBUILDING PROGRAM 4");
+    bunny_build(&my_ezh_program4[0],
+                sizeof(my_ezh_program4),
+                ezh_app__spi_rd);
+
 }
 
 
@@ -139,7 +147,11 @@ void ezh__execute_command(uint8_t cmd, EZHPWM_Para * ezh_parameters_ptr)
 
     case SPI_WRITE_APP:
         selected_program = my_ezh_program3; // start EZH
-break;
+        break;
+
+    case SPI_READ_APP:
+        selected_program = my_ezh_program4; // start EZH
+        break;
 
     default:
         break;
@@ -264,22 +276,26 @@ E_LABEL("END");
 
  // LOAD 32 BIT IMM
 #define E_LOAD_32IMM(rx, imm)                   \
+    E_PUSH(R5);                                 \
     E_LOAD_SIMM(rx, (uint8_t)(imm >> 24), 24);  \
     E_LOAD_SIMM(R5, (uint8_t)(imm >> 16), 16);  \
     E_OR(rx, rx, R5);                           \
     E_LOAD_SIMM(R5, (uint8_t)(imm >> 8), 8);    \
     E_OR(rx, rx, R5);                           \
     E_LOAD_IMM(R5, (uint8_t)(imm));             \
-    E_OR(rx, rx, R5);                           
+    E_OR(rx, rx, R5);                           \
+    E_POP(R5);               
 
 
 #if defined(CONFIG_BOARD_GIBBON_D_LPC55S69_CPU0)  | defined(CONFIG_BOARD_LPCXPRESSO55S69_LPC55S69_CPU0)
 #define SPI8_FIFOWR_ADDR            (SPI8_BASE + 0xE20)  
-#define SPI_FIFOWR__BASIC_CONFIG    ((1 << 22) | (7 << 24)) 
+#define SPI8_FIFORD_ADDR            (SPI8_BASE + 0xE30)  
+#define SPI_FIFOWR__BASIC_CONFIG_WR    ((1 << 22) | (7 << 24)) 
+#define SPI_FIFOWR__BASIC_CONFIG_RD    (7 << 24) 
 
 #elif defined (CONFIG_BOARD_FRDM_MCXN947_MCXN947_CPU0)
 #define SPI8_FIFOWR_ADDR            (0)  
-#define SPI_FIFOWR__BASIC_CONFIG    (0) 
+#define SPI_FIFOWR__BASIC_CONFIG_WR    (0) 
 
 #endif
 
@@ -291,7 +307,8 @@ E_LABEL("END");
 //  R5  -   TEMP FOR E_LOAD_32IMM
 //  R6  -   PARAM STRUCT ADDRESS
 //  R7  -   DEBUG PARAMETER POINTER 
-void ezh_app__spi_wr(void){
+void ezh_app__spi_wr(void)
+{
 
     E_NOP;
     E_NOP;
@@ -332,7 +349,6 @@ E_LABEL("TRANSFER_LOOP");
     E_GOTO("END");
 
 
-
 /*
     SPI_WR_XX_BITS
     R0  -   ADDRESS OF THE 32-BIT value to transmit
@@ -346,30 +362,228 @@ E_LABEL("SPI_WR_32_BITS");
     E_PUSH(R2);
     E_PUSH(R3);   
 
+    E_LOAD_32IMM(R3, SPI8_FIFOWR_ADDR);             // R3 = SPI8_FIFOWR_ADDR
+
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
+    // TRANSMIT value[31:24]
+    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR);     // R2 = SPI_FIFOWR__BASIC_CONFIG_WR
+    E_LDRB(R1, R0, 3);              
+    E_OR(R2, R2, R1);
+    E_STR(R3, R2, 0);
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
+    E_WAIT_FOR_BEAT();
+
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
+    // TRANSMIT value[31:24]
+    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR);     // R2 = SPI_FIFOWR__BASIC_CONFIG_WR
+    E_LDRB(R1, R0, 2);              
+    E_OR(R2, R2, R1);
+    E_STR(R3, R2, 0);
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
+    E_WAIT_FOR_BEAT();
+
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
+    // TRANSMIT value[31:24]
+    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR);     // R2 = SPI_FIFOWR__BASIC_CONFIG_WR
+    E_LDRB(R1, R0, 1);              
+    E_OR(R2, R2, R1);
+    E_STR(R3, R2, 0);
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
+    E_WAIT_FOR_BEAT();
+
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
+    // TRANSMIT value[31:24]
+    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR);     // R2 = SPI_FIFOWR__BASIC_CONFIG_WR
+    E_LDRB(R1, R0, 0);              
+    E_OR(R2, R2, R1);
+    E_STR(R3, R2, 0);
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
+    E_WAIT_FOR_BEAT();
+
+//    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
+//    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
+//    // TRANSMIT value[33:16]
+//    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR); 
+//    E_LDRB(R1, R0, 2); 
+//    E_OR(R2, R2, R1);
+//    E_STR(R3, R2, 0);
+//    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
+//    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
+//    E_WAIT_FOR_BEAT();
+//
+//    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
+//    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
+//    // TRANSMIT value[15:8]
+//    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR);
+//    E_LDRB(R1, R0, 1);
+//    E_OR(R2, R2, R1);
+//    E_STR(R3, R2, 0);
+//    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
+//    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
+//    E_WAIT_FOR_BEAT();
+//
+//    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
+//    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
+//    // TRANSMIT value[7:0]
+//    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR);
+//    E_LDRB(R1, R0, 0);
+//    E_OR(R2, R2, R1);
+//    E_STR(R3, R2, 0); 
+//    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1);
+//    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2);
+//    E_WAIT_FOR_BEAT();
+
+    E_POP(R3);
+    E_POP(R2);
+    E_POP(R1);
+    E_POP(RA);
+    E_GOTO_REG(RA);
+    
+    
+    
+E_LABEL("END");
+    E_PER_WRITE(R1, EZH2ARM);               // IRQ
+    
+E_LABEL("END_LOOP");   
+    E_LOAD_IMM(CFS, 0);
+    E_LOAD_SIMM(R0, 0xDB, 24);
+    E_LOAD_SIMM(R1, 0x6D, 16);
+    E_LOAD_SIMM(R2, 0xB6, 8);
+    E_XOR(R0, R0, R1);
+    E_XOR(CFM, R0, R2);
+    E_HOLD();
+    E_GOTO("END_LOOP");
+}
+
+
+
+#define SPI_READ_JUNK_BYTE  0XAA
+void ezh_app__spi_rd(void)
+{
+    E_NOP;
+    E_NOP;
+
+    E_PER_READ(R6, ARM2EZH);                    // Read the base address of the parameters into R6
+    E_LSR(R6, R6, 2);                           // make sure parameter structure 32-bit aligned
+    E_LSL(R6, R6, 2); 
+    E_LDR(SP, R6, 0);                           // load stack pointer from the 1st 32-bit word of the parameter struct
+    E_LDR(R7, R6, 1);                           // R7 -> load the base address the parameters struct
+
+    E_BSET_IMM(GPD, GPD, EZH_TEST_GPIO_1);
+    E_BSET_IMM(GPD, GPD, EZH_TEST_GPIO_2);
+    E_BCLR_IMM(GPO, GPO, EZH_TEST_GPIO_1);
+    E_BCLR_IMM(GPO, GPO, EZH_TEST_GPIO_2);
+
+    E_HEART_RYTHM_IMM(MAGIC_RYTHM);
+
+
+    // Transmit CMD + ADDR
+    E_ADD_IMM(R0, R7, 0);                               // R0 = cmd_and_addr
+    E_GOSUB("SPI_WR_32_BITS");
+
+    
+    // WAIT THE DON'T CARE BYTES
+    E_LOAD_32IMM(R0, SPI_FIFOWR__BASIC_CONFIG_WR);      // R0 = SPI_FIFOWR__BASIC_CONFIG_WR
+    E_LOAD_32IMM(R1, SPI8_FIFOWR_ADDR);                 // R1 = SPI8_FIFOWR_ADDR
+    E_LDR(R2, R7, 1);                                   // R2 = NUM OF DONT CARE BYTES
+    E_ADD_IMMS(R2, R2, 0);                              // UPDATE FLAGS
+
+E_LABEL("DONT_CARE_BYTES_LOOP");
+    E_COND_GOTO(ZE, "READ_BYTES");
+    E_GOSUB("SPI_WR_BYTE");
+    E_SUB_IMMS(R2, R2, 1); 
+    E_GOSUB("DONT_CARE_BYTES_LOOP");
+
+
+    // READ INCOMING BYTES AND PUT THEM IN THE PARAMS BUFFER
+E_LABEL("READ_BYTES");
+    E_LOAD_32IMM(R0, SPI_FIFOWR__BASIC_CONFIG_RD);      // R0 = SPI_FIFOWR__BASIC_CONFIG_RD
+    E_OR_IMM(R0, R0, SPI_READ_JUNK_BYTE);
+
+    E_LOAD_32IMM(R1, SPI8_FIFOWR_ADDR);                 // R1 = SPI8_FIFOWR_ADDR
+    E_LDR(R2, R7, 2);                                   // R2 = NUM OF BYTES TO READ
+    E_LOAD_32IMM(R3, SPI8_FIFORD_ADDR);                 // R1 = SPI8_FIFORD_ADDR
+    E_LDR(R5, R7, 3);                                   // R3 = RX_BUFF PTR
+    E_ADD_IMMS(R2, R2, 0);                              // UPDATE FLAGS
+
+
+E_LABEL("READ_BYTES_LOOP");
+    E_COND_GOTO(ZE, "END");
+    E_GOSUB("SPI_WR_BYTE");                             //WRITE TO GENERATE THE CLOCK
+
+    //READ THE FIFO, STORE IT IN THE RX_BUFFER, AND THEN INCREMENT THE PTR
+    E_LDR(R4, R3, 0);
+    E_PUSH(R4);
+    E_STRB_POST(R5, R4, 1);
+
+    E_SUB_IMMS(R2, R2, 1); 
+    E_GOSUB("READ_BYTES_LOOP");
+
+    E_GOTO("END");
+
+
+
+/*
+    SPI_WR_BYTE
+        R0  -   CURRENT BYTE TO TRANSMIT    -   ARG
+        R1  -   SPI8_FIFOWR_ADDR
+*/
+E_LABEL("SPI_WR_BYTE");
+    E_PUSH(RA);
+    E_STR(R1, R0, 0);
+    E_WAIT_FOR_BEAT();
+    E_POP(RA);
+    E_GOTO_REG(RA);
+
+
+/*
+    SPI_WR_32_BITS
+        R0  -   ADDRESS OF THE 32-BIT value to transmit
+        R1  -   CURRENT BYTE TO TRANSMIT
+        R2  -   SPI TRANSACTION CONFIGS + BYTE TO WRITE
+        R3  -   SPI8_FIFOWR_ADDR
+*/
+E_LABEL("SPI_WR_32_BITS");
+    E_PUSH(RA);
+    E_PUSH(R1);
+    E_PUSH(R2);
+    E_PUSH(R3);   
+
     E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
     E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
 
+    // TRANSMIT value[31:24]
     E_LOAD_32IMM(R3, SPI8_FIFOWR_ADDR);             // R3 = SPI8_FIFOWR_ADDR
-    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG);     // R2 = SPI_FIFOWR__BASIC_CONFIG
+    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR);     // R2 = SPI_FIFOWR__BASIC_CONFIG_RD
     E_LDRB(R1, R0, 3);              
     E_OR(R2, R2, R1);
     E_STR(R3, R2, 0);
     E_WAIT_FOR_BEAT();
 
-    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG); 
+    // TRANSMIT value[33:16]
+    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR); 
     E_LDRB(R1, R0, 2); 
     E_OR(R2, R2, R1);
     E_STR(R3, R2, 0);
     E_WAIT_FOR_BEAT();
 
-    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG);
+    // TRANSMIT value[15:8]
+    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR);
     E_LDRB(R1, R0, 1);
     E_OR(R2, R2, R1);
     E_STR(R3, R2, 0);
     E_WAIT_FOR_BEAT();
 
-
-    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG);
+    // TRANSMIT value[7:0]
+    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR);
     E_LDRB(R1, R0, 0);
     E_OR(R2, R2, R1);
     E_STR(R3, R2, 0);   
@@ -383,11 +597,14 @@ E_LABEL("SPI_WR_32_BITS");
     E_POP(R1);
     E_POP(RA);
     E_GOTO_REG(RA);
-    
-    
-    
+
+
+
+/*  
+    END
+*/
 E_LABEL("END");
-    E_PER_WRITE(R1, EZH2ARM);               // IRQ
+    E_PER_WRITE(R1, EZH2ARM);               // IRQ  
     
 E_LABEL("END_LOOP");   
     E_LOAD_IMM(CFS, 0);
