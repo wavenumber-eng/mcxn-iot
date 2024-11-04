@@ -23,7 +23,7 @@
     psram_spi: psram@0 {
         compatible = "vnd,spi-device";
         reg = <0>; //Use Chip select 1
-        spi-max-frequency = <10000000>; //50000000
+        spi-max-frequency = <25000000>; //50000000
         };
 };
 

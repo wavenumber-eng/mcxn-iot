@@ -271,17 +271,12 @@ uint8_t rx_buffer[SPI_RD_MAX_LENGTH];
 
 int32_t ExtRAM::ezh_rdid()
 {
-    /*
-            1  byte command, 3 bytes dummy address and 2 bytes for the response
-    */
-//    uint8_t tx_buffer[6] ={PSRAM__RDID,0,0,0,0,0};
-//    uint8_t rx_buffer[6] ={0,0,0,0,0,0};
         
     ezh_spi_rd_params.cmd_and_addr =  (PSRAM__RDID << 24) ;       
-    ezh_spi_rd_params.wait_cycles =  2; // wait 2-bytes time
-    ezh_spi_rd_params.rx_buffer_length = 6; // length in bytes
+    ezh_spi_rd_params.wait_cycles =  0; // zero dummy cycles
+    
+    ezh_spi_rd_params.rx_buffer_length = 2; // length in bytes
     ezh_spi_rd_params.rx_buffer_ptr = (uint32_t *)(&rx_buffer[0]);
-
 
     ezh_parameters.coprocessor_stack = (void *)ezh_stack;
     ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_rd_params);

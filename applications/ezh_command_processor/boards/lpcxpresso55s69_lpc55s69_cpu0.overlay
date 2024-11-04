@@ -5,9 +5,11 @@
     pinctrl-0 = <&pinmux_hs_lspi_default>;
     pinctrl-names = "default";
 
-    psram_spi: psram@0 {
+    /delete-property/ cs-gpios;
+
+    psram_spi: psram@1 {
         compatible = "vnd,spi-device";
-        reg = <0>; //Use Chip select 1
+        reg = <1>; //Use Chip select 1
         spi-max-frequency = <10000000>; //50000000
         };
 };
@@ -25,7 +27,9 @@
 
     pinmux_hs_lspi_default: pinmux_hs_lspi_default {
         group0 {        
-            pinmux = <HS_SPI_SSEL0_PIO0_20>,     // MCUX-LINK PRO SSEL0  
+            pinmux = 
+               <HS_SPI_SSEL0_PIO0_20>,     // MCUX-LINK PRO SSEL0  
+               // <HS_SPI_SSEL1_PIO1_1>,     // LPC55S69 Xpresso SSEL1
                 <HS_SPI_SCK_PIO1_2>,            //CORRECT
                 <HS_SPI_MISO_PIO1_3>,           //CORRECT
                 <HS_SPI_MOSI_PIO0_26>;          //CORRECT
@@ -41,8 +45,9 @@
 		io-dir-pin = &io_dir_pin;
 	};
 
+
     gpio_keys{
-        io_dir_pin: P11 {
+       io_dir_pin: P11 {
 			gpios = <&gpio1 1 GPIO_ACTIVE_HIGH>;
 		};
     };

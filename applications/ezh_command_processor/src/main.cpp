@@ -179,20 +179,20 @@ static struct gpio_dt_spec io_dir_pin = GPIO_DT_SPEC_GET(DT_ALIAS(io_dir_pin), g
 
 #define TEST_ARRAY_SIZE	10
 uint32_t spi_test_array [TEST_ARRAY_SIZE];
+uint8_t test_array[32*4];
 
 int main(void)
 {
 
+  //Direction pin for chip select on 
     gpio_pin_configure_dt(&io_dir_pin, GPIO_OUTPUT);
     gpio_pin_set_dt(&io_dir_pin, 1);
 
     LOG_DBG("init psram ....");
-   // ext_ram.Init();
+  //  ext_ram.Init();
     LOG_DBG("...done");
 
-    ezh__start_app();
-
-  //  ext_ram.RDID();
+   ezh__start_app();
 
 
    spi_master_config_t SPI_Config = {0};
@@ -215,6 +215,7 @@ int main(void)
     	SPI_MasterInit(SPI8,&SPI_Config, CLOCK_GetHsLspiClkFreq());
 
 
+
 	for(uint32_t i = 0; i < TEST_ARRAY_SIZE; i++)
 	{
 		spi_test_array[i] = i;
@@ -227,8 +228,11 @@ int main(void)
 //
 //        ezh__execute_command(TOGGLE2_APP);
     
-//     	ext_ram.ezh_write(0x00112233, spi_test_array, TEST_ARRAY_SIZE);
+  //	ext_ram.ezh_write(0x00112233, spi_test_array, TEST_ARRAY_SIZE);
 		ext_ram.ezh_rdid();
+
+  //  ext_ram.fast_read(0, &test_array[0], sizeof(test_array));
+  // ext_ram.RDID();
         k_sleep(K_MSEC(250));
     }
 

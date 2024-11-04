@@ -1,31 +1,41 @@
 
 
-
-Breakpoint=C:/companies/wavenumber/mcxn-iot/mcxn-iot/applications/ezh_command_processor/src/ezh_app.c:45, State=BP_STATE_ON
-Breakpoint=C:/companies/wavenumber/mcxn-iot/mcxn-iot/applications/ezh_command_processor/src/ezh_app.c:149:5, State=BP_STATE_DISABLED
-Breakpoint=C:/companies/wavenumber/mcxn-iot/mcxn-iot/applications/ezh_command_processor/src/main.cpp:230:7, State=BP_STATE_DISABLED
-OpenDocument="main.cpp", FilePath="C:/companies/wavenumber/mcxn-iot/mcxn-iot/applications/ezh_command_processor/src/main.cpp", Line=182
-OpenDocument="cmsis_gcc.h", FilePath="C:/companies/wavenumber/mcxn-iot/modules/hal/cmsis/CMSIS/Core/Include/cmsis_gcc.h", Line=234
-OpenDocument="kernel.h", FilePath="C:/companies/wavenumber/mcxn-iot/zephyr/include/zephyr/kernel.h", Line=5985
-OpenDocument="ezh_app.c", FilePath="C:/companies/wavenumber/mcxn-iot/mcxn-iot/applications/ezh_command_processor/src/ezh_app.c", Line=32
-OpenDocument="gpio.h", FilePath="C:/companies/wavenumber/mcxn-iot/mcxn-iot/applications/ezh_command_processor/build/zephyr/include/generated/zephyr/syscalls/gpio.h", Line=48
-OpenDocument="reset.S", FilePath="C:/companies/wavenumber/mcxn-iot/zephyr/arch/arm/core/cortex_m/reset.S", Line=84
-OpenDocument="ext_ram.cpp", FilePath="C:/companies/wavenumber/mcxn-iot/mcxn-iot/applications/ezh_command_processor/src/ext_ram.cpp", Line=225
-OpenDocument="gpio.h", FilePath="C:/companies/wavenumber/mcxn-iot/zephyr/include/zephyr/drivers/gpio.h", Line=1373
-OpenDocument="fault_s.S", FilePath="C:/companies/wavenumber/mcxn-iot/zephyr/arch/arm/core/cortex_m/fault_s.S", Line=39
+OpenDocument="lpc55s69.jdebug", FilePath="C:/ELI/mcxn-iot/mcxn-iot/applications/ezh_command_processor/lpc55s69.jdebug", Line=0
+OpenDocument="cmsis_gcc.h", FilePath="C:/ELI/mcxn-iot/modules/hal/cmsis/CMSIS/Core/Include/cmsis_gcc.h", Line=247
+OpenDocument="sched.c", FilePath="C:/ELI/mcxn-iot/zephyr/kernel/sched.c", Line=1098
+OpenDocument="kernel.h", FilePath="C:/ELI/mcxn-iot/mcxn-iot/applications/ezh_command_processor/build/zephyr/include/generated/zephyr/syscalls/kernel.h", Line=128
+OpenDocument="ezh_init.c", FilePath="C:/ELI/mcxn-iot/modules/bunny_build/src/ezh_init.c", Line=18
+OpenDocument="ext_ram.cpp", FilePath="C:/ELI/mcxn-iot/mcxn-iot/applications/ezh_command_processor/src/ext_ram.cpp", Line=263
+OpenDocument="main.cpp", FilePath="C:/ELI/mcxn-iot/mcxn-iot/applications/ezh_command_processor/src/main.cpp", Line=209
+OpenDocument="gpio.h", FilePath="C:/ELI/mcxn-iot/zephyr/include/zephyr/drivers/gpio.h", Line=1379
+OpenDocument="timeout.c", FilePath="C:/ELI/mcxn-iot/zephyr/kernel/timeout.c", Line=67
+OpenDocument="reset.S", FilePath="C:/ELI/mcxn-iot/zephyr/arch/arm/core/cortex_m/reset.S", Line=90
+OpenDocument="ezh_app.c", FilePath="C:/ELI/mcxn-iot/mcxn-iot/applications/ezh_command_processor/src/ezh_app.c", Line=153
+OpenDocument="gpio.h", FilePath="C:/ELI/mcxn-iot/mcxn-iot/applications/ezh_command_processor/build/zephyr/include/generated/zephyr/syscalls/gpio.h", Line=54
 OpenToolbar="Debug", Floating=0, x=0, y=0
-OpenWindow="Memory 1", DockArea=BOTTOM, x=1, y=0, w=149, h=175, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, EditorAddress=0x14000000
-OpenWindow="Watched Data 1", DockArea=LEFT, x=0, y=0, w=409, h=758, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Terminal", DockArea=BOTTOM, x=3, y=0, w=151, h=175, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
-OpenWindow="Timeline", DockArea=BOTTOM, x=0, y=0, w=523, h=175, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=1, DataPaneShown=1, PowerPaneShown=1, CodePaneShown=1, PinCursor="Cursor Movable", TimePerDiv="1 ns / Div", TimeStampFormat="Time", DataGraphDrawAsPoints=0, DataGraphLegendShown=1, DataGraphUniformSampleSpacing=0, DataGraphLegendPosition="253;0", DataGraphShowNamesAtCursor=0, PowerGraphDrawAsPoints=0, PowerGraphLegendShown=1, PowerGraphAvgFilterTime=Off, PowerGraphAvgFilterLen=Off, PowerGraphUniformSampleSpacing=0, PowerGraphLegendPosition="255;0", CodeGraphLegendShown=1, CodeGraphLegendPosition="183;0"
-OpenWindow="Console", DockArea=BOTTOM, x=2, y=0, w=132, h=175, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Call Stack", DockArea=RIGHT, x=0, y=3, w=380, h=125, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Registers 1", DockArea=RIGHT, x=0, y=4, w=380, h=198, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, FilteredItems=[], RefreshRate=1
+OpenWindow="Disassembly", DockArea=RIGHT, x=0, y=1, w=380, h=103, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Break & Tracepoints", DockArea=LEFT, x=0, y=0, w=665, h=149, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, VectorCatchIndexMask=254
+OpenWindow="Memory 1", DockArea=BOTTOM, x=0, y=0, w=303, h=436, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, EditorAddress=0x14000000
+OpenWindow="Global Data", DockArea=RIGHT, x=0, y=2, w=380, h=103, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Watched Data 1", DockArea=LEFT, x=0, y=1, w=665, h=229, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Functions", DockArea=LEFT, x=0, y=3, w=665, h=107, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Terminal", DockArea=BOTTOM, x=3, y=0, w=128, h=436, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Data Sampling", DockArea=LEFT, x=0, y=2, w=665, h=137, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, VisibleTab=0, UniformSampleSpacing=0
+OpenWindow="Timeline", DockArea=BOTTOM, x=1, y=0, w=681, h=436, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=1, DataPaneShown=1, PowerPaneShown=1, CodePaneShown=1, PinCursor="Cursor Movable", TimePerDiv="1 ns / Div", TimeStampFormat="Time", DataGraphDrawAsPoints=0, DataGraphLegendShown=1, DataGraphUniformSampleSpacing=0, DataGraphLegendPosition="209;-97", DataGraphShowNamesAtCursor=0, PowerGraphDrawAsPoints=0, PowerGraphLegendShown=1, PowerGraphAvgFilterTime=Off, PowerGraphAvgFilterLen=Off, PowerGraphUniformSampleSpacing=0, PowerGraphLegendPosition="211;-97", CodeGraphLegendShown=1, CodeGraphLegendPosition="139;0"
+OpenWindow="Console", DockArea=BOTTOM, x=2, y=0, w=917, h=436, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="RTOS", DockArea=RIGHT, x=0, y=0, w=380, h=92, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0, Showing=""
 SmartViewPlugin="", Page="", Toolbar="Hidden", Window="SmartView 1"
+TableHeader="Global Data", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Location";"Size";"Type";"Access";"Scope"], ColWidths=[100;100;100;100;100;27;100]
+TableHeader="Vector Catches", SortCol="", SortOrder="ASCENDING", VisibleCols=["";"Vector Catch";"Description"], ColWidths=[50;300;500]
+TableHeader="Break & Tracepoints", SortCol="Type", SortOrder="ASCENDING", VisibleCols=["";"Type";"Location";"Extras"], ColWidths=[50;93;127;395]
+TableHeader="Functions", SortCol="Name", SortOrder="DESCENDING", VisibleCols=["Name";"Address";"Size";"#Insts";"Class";"Source"], ColWidths=[1351;100;100;100;27;1378]
+TableHeader="Call Stack", SortCol="Function", SortOrder="ASCENDING", VisibleCols=["Function";"Source"], ColWidths=[280;1312]
+TableHeader="Data Sampling Table", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Index";"Time"], ColWidths=[100;100]
+TableHeader="Data Sampling Setup", SortCol="Expression", SortOrder="DESCENDING", VisibleCols=["Expression";"Type";"Value";"Min";"Max";"Average";"# Changes";"Min. Change";"Max. Change"], ColWidths=[124;100;100;100;100;101;127;142;146]
 TableHeader="Power Sampling", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Index";"Time";"Ch 0"], ColWidths=[100;100;100]
-TableHeader="Watched Data 1", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Location";"Refresh";"Access"], ColWidths=[99;286;100;100;100]
+TableHeader="Registers 1", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Description"], ColWidths=[199;287;399]
+TableHeader="Watched Data 1", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Location";"Refresh";"Access"], ColWidths=[99;286;100;180;100]
 TableHeader="RegisterSelectionDialog", SortCol="None", SortOrder="ASCENDING", VisibleCols=[], ColWidths=[]
-TableHeader="TargetExceptionDialog", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Address";"Description"], ColWidths=[200;100;100;359]
-WatchedExpression="test_val", RefreshRate=5, DisplayFormat=DISPLAY_FORMAT_HEX, Window=Watched Data 1
-WatchedExpression="ezh_stack", RefreshRate=5, DisplayFormat=DISPLAY_FORMAT_HEX, Window=Watched Data 1
-WatchedExpression="spi_test_array", DisplayFormat=DISPLAY_FORMAT_HEX, Window=Watched Data 1
-WatchedExpression="ezh_cmd_params", DisplayFormat=DISPLAY_FORMAT_HEX, Window=Watched Data 1
-WatchedExpression="ezh_parameters", DisplayFormat=DISPLAY_FORMAT_HEX, Window=Watched Data 1
+TableHeader="TargetExceptionDialog", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Address";"Description"], ColWidths=[200;100;100;351]
