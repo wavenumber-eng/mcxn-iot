@@ -485,7 +485,7 @@ E_LABEL("DONT_CARE_BYTES_LOOP");
 */
 
 
-//  NEW CODE, IT SEEMS LIKE THE DELAY NO
+//  NEW CODE, IT SEEMS LIKE THE DELAY NO LONGER EXITS
     E_LDR(R2, R7, 1);                                   // R2 = NUM OF DONT CARE BYTES
     E_ADD_IMMS(R2, R2, 0);                              // UPDATE FLAGS
     E_COND_GOTO(ZE, "READ_BYTES");
