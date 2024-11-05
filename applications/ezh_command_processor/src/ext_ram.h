@@ -28,6 +28,7 @@ class ExtRAM {
     
     int32_t ezh_write(uint32_t address, uint32_t *data, uint32_t len);
     int32_t ezh_rdid();
+    int32_t ezh_fast_read(uint32_t address, uint32_t *rx_buffer, uint32_t len);
 
     bool init_complete;
     const uint32_t size = CONFIG_PSRAM_SIZE_BYTES;
