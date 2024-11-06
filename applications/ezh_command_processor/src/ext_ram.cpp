@@ -169,7 +169,7 @@ int32_t ExtRAM::write(uint32_t address, uint8_t *data, uint32_t len)
 
         */
 /*
-        SPI8->FIFOCFG |= 3<<16; //*Flush the Tx & Rx buffers
+        SPI8->FIFOCFG |= 3<<16; //Flush the Tx & Rx buffers
 
         SPI8->FIFOCFG |= 1; // Enable the fifo
 
