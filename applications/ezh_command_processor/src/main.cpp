@@ -88,8 +88,8 @@ LOG_MODULE_REGISTER(main);
 
 static struct gpio_dt_spec io_dir_pin = GPIO_DT_SPEC_GET(DT_ALIAS(io_dir_pin), gpios);
 
-#define TEST_ARRAY_SIZE 8
-uint32_t spi_test_array[TEST_ARRAY_SIZE];
+#define TEST_ARRAY_SIZE 128
+uint8_t spi_test_array[TEST_ARRAY_SIZE];
 uint8_t test_array[64 * 4];
 
 int main(void)

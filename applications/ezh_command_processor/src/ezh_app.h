@@ -12,14 +12,6 @@ extern "C" {
 #define SPI_RD_MAX_LENGTH   128
 #define CONFIG__SPI_SCK_FREQ    33000000
 
-
-typedef struct
-{
-    uint32_t cmd_and_addr;          // (cmd(8bits) << 24) | add(24bits)
-    uint32_t data_buffer_length;
-    uint32_t * data_buffer;
-} EZH_spi_wr_params_t;
-
 typedef struct
 {
     uint32_t cmd_and_addr;          // (cmd(8bits) << 24) | add(24bits)
@@ -27,7 +19,7 @@ typedef struct
     uint32_t rx_buffer_length;
     uint32_t * rx_buffer_ptr;
 
-} EZH_spi_rd_params_t;
+} ezh_spi_params_t;
 
 
 typedef struct _EZHPWM_Para

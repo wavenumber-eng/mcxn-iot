@@ -319,7 +319,7 @@ E_LABEL("END");
     Work In Progress SPI_WR
         this function pretends to be a SPI write function, similar to the SPI read implementation
 */
-void wip_ezh_app__spi_wr(void)
+void ezh_app__spi_wr(void)
 {
     E_NOP;
     E_NOP;
@@ -337,6 +337,7 @@ void wip_ezh_app__spi_wr(void)
     E_GOSUB("SPI_WR_32_BITS");
 
     E_LDR(R2, R7, 2);                           // Load buffer length
+    E_LDR(R5, R7, 3);                           // R3 = RX_BUFF PTR
 
     // WRITE BYTES OVER SPI8
 E_LABEL("WRITE_BYTES");
@@ -348,18 +349,21 @@ E_LABEL("WRITE_BYTES_LOOP");
 
     //Subtract 1 and to see if this is the last byte
     //if so, change the SPI register for the last transmission to flat EOT and disable chip selects
+    E_LOAD_32IMM(R0, SPI_FIFOWR__BASIC_CONFIG_WR);
     E_SUB_IMMS(R2, R2, 1); 
     E_COND_GOTO(NZ, "NEXT_BYTE_OUT");
     E_LOAD_32IMM(R0, SPI_FIFOWR__BASIC_CONFIG_WR_EOT);
 
 E_LABEL("NEXT_BYTE_OUT");  
+    
+    E_LDRB_POST(R4, R5, 1);
+    E_OR(R0,R0, R4);
+
     E_GOSUB("SPI_WR_BYTE");
     E_PUSH(R2);
     E_ADD_IMMS(R2, R2, 0);                      //UPDATE THE ALU FLAGS 
     E_COND_GOTO(ZE, "END");
     E_GOTO("WRITE_BYTES_LOOP");
-    
-
 
 
     E_GOTO("END");
@@ -459,7 +463,7 @@ E_LABEL("END_LOOP");
 //  R5  -   TEMP FOR E_LOAD_32IMM
 //  R6  -   PARAM STRUCT ADDRESS
 //  R7  -   DEBUG PARAMETER POINTER 
-void ezh_app__spi_wr(void)
+void old_ezh_app__spi_wr(void)
 {
 
     E_NOP;

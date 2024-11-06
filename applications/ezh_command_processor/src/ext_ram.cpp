@@ -13,8 +13,7 @@ LOG_MODULE_REGISTER(psram, LOG_LEVEL_DBG);
 uint32_t ezh_stack[64];
 uint32_t ezh_debug_params[10];
 EZHPWM_Para ezh_parameters;
-EZH_spi_wr_params_t ezh_spi_wr_params;
-EZH_spi_rd_params_t ezh_spi_rd_params;
+ezh_spi_params_t ezh_spi_params;
 
 
 ExtRAM::ExtRAM() : m_first(true)  {} 
@@ -249,24 +248,26 @@ int32_t ExtRAM::write(uint32_t address, uint8_t *data, uint32_t len)
 
 int32_t ExtRAM::ezh_write(uint32_t address, uint32_t *data, uint32_t len)
 {
+    // To use with the older version
+/*
     ezh_spi_wr_params.cmd_and_addr = (((uint8_t)PSRAM__WRITE) << 24) | (address & 0xffffff);
     ezh_spi_wr_params.data_buffer_length = len;
     ezh_spi_wr_params.data_buffer = data;
 
     ezh_parameters.coprocessor_stack = (void *)ezh_stack;
     ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_wr_params);
+*/
 
-/*
-    TO USE WITH THE VERSION SIMILAR TO SPI_RD
-        ezh_spi_rd_params.cmd_and_addr =  (((uint8_t)PSRAM__WRITE) << 24) | (address & 0xffffff);      
-        ezh_spi_rd_params.wait_cycles =  0; // zero dummy cycles
+//    TO USE WITH THE VERSION SIMILAR TO SPI_RD
+        ezh_spi_params.cmd_and_addr =  (((uint8_t)PSRAM__WRITE) << 24) | (address & 0xffffff);      
+        ezh_spi_params.wait_cycles =  0; // zero dummy cycles
         
-        ezh_spi_rd_params.rx_buffer_length = len; // length in bytes
-        ezh_spi_rd_params.rx_buffer_ptr = (uint32_t *)(&data[0]);
+        ezh_spi_params.rx_buffer_length = len; // length in bytes
+        ezh_spi_params.rx_buffer_ptr = (uint32_t *)(&data[0]);
 
         ezh_parameters.coprocessor_stack = (void *)ezh_stack;
-        ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_rd_params);
-*/
+        ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_params);
+
   
     ezh__execute_command(SPI_WRITE_APP, &ezh_parameters);
 
@@ -276,14 +277,14 @@ int32_t ExtRAM::ezh_write(uint32_t address, uint32_t *data, uint32_t len)
 
 int32_t ExtRAM::ezh_fast_read(uint32_t address, uint32_t *rx_buffer, uint32_t len)
 {
-    ezh_spi_rd_params.cmd_and_addr =  (PSRAM__FAST_READ << 24) | (address & 0xffffff);       
-    ezh_spi_rd_params.wait_cycles =  1; // zero dummy cycles
+    ezh_spi_params.cmd_and_addr =  (PSRAM__FAST_READ << 24) | (address & 0xffffff);       
+    ezh_spi_params.wait_cycles =  1; // zero dummy cycles
     
-    ezh_spi_rd_params.rx_buffer_length = len; // length in bytes
-    ezh_spi_rd_params.rx_buffer_ptr = (uint32_t *)(&rx_buffer[0]);
+    ezh_spi_params.rx_buffer_length = len; // length in bytes
+    ezh_spi_params.rx_buffer_ptr = (uint32_t *)(&rx_buffer[0]);
 
     ezh_parameters.coprocessor_stack = (void *)ezh_stack;
-    ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_rd_params);
+    ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_params);
     ezh__execute_command(SPI_READ_APP, &ezh_parameters);
 
     return 0;
@@ -300,14 +301,14 @@ uint8_t rx_buffer[SPI_RD_MAX_LENGTH];
 int32_t ExtRAM::ezh_rdid()
 {
         
-    ezh_spi_rd_params.cmd_and_addr =  (PSRAM__RDID << 24) ;       
-    ezh_spi_rd_params.wait_cycles =  0; // zero dummy cycles
+    ezh_spi_params.cmd_and_addr =  (PSRAM__RDID << 24) ;       
+    ezh_spi_params.wait_cycles =  0; // zero dummy cycles
     
-    ezh_spi_rd_params.rx_buffer_length = 2; // length in bytes
-    ezh_spi_rd_params.rx_buffer_ptr = (uint32_t *)(&rx_buffer[0]);
+    ezh_spi_params.rx_buffer_length = 2; // length in bytes
+    ezh_spi_params.rx_buffer_ptr = (uint32_t *)(&rx_buffer[0]);
 
     ezh_parameters.coprocessor_stack = (void *)ezh_stack;
-    ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_rd_params);
+    ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_params);
     ezh__execute_command(SPI_READ_APP, &ezh_parameters);
 
     return 0;
