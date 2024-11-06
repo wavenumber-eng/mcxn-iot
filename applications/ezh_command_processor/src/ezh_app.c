@@ -292,7 +292,7 @@ E_LABEL("END");
 #define SPI8_FIFORD_ADDR            (SPI8_BASE + 0xE30)  
 #define SPI_FIFOWR__BASIC_CONFIG_WR    ((1 << 22) | (7 << 24))                                  //Activating all chip selects
 
- #define SPI_FIFOWR__BASIC_CONFIG_WR_EOT  ((1 << 22) | (7 << 24) | (0xf<<16) | (1<<20))         //Note:  deactiving all chip selects
+#define SPI_FIFOWR__BASIC_CONFIG_WR_EOT  ((1 << 22) | (7 << 24) | (0xf<<16) | (1<<20))         //Note:  deactiving all chip selects
 
 #define SPI_FIFOWR__BASIC_CONFIG_RD       ((7 << 24) | (0xf<<16))                               //Activating all chip selects
 #define SPI_FIFOWR__BASIC_CONFIG_RD_EOT   (SPI_FIFOWR__BASIC_CONFIG_RD | (0xf<<16) | (1<<20))   //Note:  deactiving all chip selects
@@ -303,9 +303,155 @@ E_LABEL("END");
 
 #endif
 
+
+#if defined(CONFIG__SPI_SCK_FREQ) && (CONFIG__SPI_SCK_FREQ == 10000000)
 #define MAGIC_RYTHM (7 * 15)  //for 10MHz
-//#define MAGIC_RYTHM (7 * 5) //for 25MHz
-//#define MAGIC_RYTHM (7 * 2) //for 33MHz
+#elif defined(CONFIG__SPI_SCK_FREQ) && (CONFIG__SPI_SCK_FREQ == 25000000)
+#define MAGIC_RYTHM (7 * 5) //for 25MHz
+#elif defined(CONFIG__SPI_SCK_FREQ) && (CONFIG__SPI_SCK_FREQ == 33000000)
+#define MAGIC_RYTHM (10) //for 33MHz
+#else
+#error "SPI_SCK_FREQ NOT DEFINED"
+#endif
+
+
+/*
+    Work In Progress SPI_WR
+        this function pretends to be a SPI write function, similar to the SPI read implementation
+*/
+void wip_ezh_app__spi_wr(void)
+{
+    E_NOP;
+    E_NOP;
+
+    E_PER_READ(R6, ARM2EZH);                    // Read the base address of the parameters into R6
+    E_LSR(R6, R6, 2);                           // make sure parameter structure 32-bit aligned
+    E_LSL(R6, R6, 2); 
+    E_LDR(SP, R6, 0);                           // load stack pointer from the 1st 32-bit word of the parameter struct
+    E_LDR(R7, R6, 1);                           // R7 -> load the base address the parameters struct
+
+    E_HEART_RYTHM_IMM(MAGIC_RYTHM);
+
+    // Transmit CMD + ADDR
+    E_ADD_IMM(R0, R7, 0);                           
+    E_GOSUB("SPI_WR_32_BITS");
+
+    E_LDR(R2, R7, 2);                           // Load buffer length
+
+    // WRITE BYTES OVER SPI8
+E_LABEL("WRITE_BYTES");
+    E_LOAD_32IMM(R0, SPI_FIFOWR__BASIC_CONFIG_WR);      // R0 = SPI_FIFOWR__BASIC_CONFIG_WR
+    E_LOAD_32IMM(R1, SPI8_FIFOWR_ADDR);                 // R1 = SPI8_FIFOWR_ADDR
+
+
+E_LABEL("WRITE_BYTES_LOOP");   
+
+    //Subtract 1 and to see if this is the last byte
+    //if so, change the SPI register for the last transmission to flat EOT and disable chip selects
+    E_SUB_IMMS(R2, R2, 1); 
+    E_COND_GOTO(NZ, "NEXT_BYTE_OUT");
+    E_LOAD_32IMM(R0, SPI_FIFOWR__BASIC_CONFIG_WR_EOT);
+
+E_LABEL("NEXT_BYTE_OUT");  
+    E_GOSUB("SPI_WR_BYTE");
+    E_PUSH(R2);
+    E_ADD_IMMS(R2, R2, 0);                      //UPDATE THE ALU FLAGS 
+    E_COND_GOTO(ZE, "END");
+    E_GOTO("WRITE_BYTES_LOOP");
+    
+
+
+
+    E_GOTO("END");
+
+
+/*
+    SPI_WR_BYTE
+        R0  -   CURRENT BYTE TO TRANSMIT    -   ARG
+        R1  -   SPI8_FIFOWR_ADDR
+*/
+E_LABEL("SPI_WR_BYTE");
+    E_PUSH(RA);
+    E_STR(R1, R0, 0);
+    E_WAIT_FOR_BEAT();
+    E_POP(RA);
+    E_GOTO_REG(RA);
+
+
+/*
+    SPI_WR_32_BITS
+        R0  -   ADDRESS OF THE 32-BIT value to transmit
+        R1  -   CURRENT BYTE TO TRANSMIT
+        R2  -   SPI TRANSACTION CONFIGS + BYTE TO WRITE
+        R3  -   SPI8_FIFOWR_ADDR
+*/
+E_LABEL("SPI_WR_32_BITS");
+    E_PUSH(RA);
+    E_PUSH(R1);
+    E_PUSH(R2);
+    E_PUSH(R3);   
+
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
+
+    // TRANSMIT value[31:24]
+    E_LOAD_32IMM(R3, SPI8_FIFOWR_ADDR);               // R3 = SPI8_FIFOWR_ADDR
+    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR);     // R2 = SPI_FIFOWR__BASIC_CONFIG_RD
+    E_LDRB(R1, R0, 3);              
+    E_OR(R2, R2, R1);
+    E_STR(R3, R2, 0);
+    E_WAIT_FOR_BEAT();
+
+    // TRANSMIT value[33:16]
+    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR); 
+    E_LDRB(R1, R0, 2); 
+    E_OR(R2, R2, R1);
+    E_STR(R3, R2, 0);
+    E_WAIT_FOR_BEAT();
+
+    // TRANSMIT value[15:8]
+    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR);
+    E_LDRB(R1, R0, 1);
+    E_OR(R2, R2, R1);
+    E_STR(R3, R2, 0);
+    E_WAIT_FOR_BEAT();
+
+    // TRANSMIT value[7:0]
+    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR);
+    E_LDRB(R1, R0, 0);
+    E_OR(R2, R2, R1);
+    E_STR(R3, R2, 0);   
+    E_WAIT_FOR_BEAT();
+    
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
+
+    E_POP(R3);
+    E_POP(R2);
+    E_POP(R1);
+    E_POP(RA);
+    E_GOTO_REG(RA);
+
+
+/*
+    END
+        End the program and trigger an interrupt
+*/
+E_LABEL("END");
+    E_PER_WRITE(R1, EZH2ARM);               // IRQ
+    
+E_LABEL("END_LOOP");   
+    E_LOAD_IMM(CFS, 0);
+    E_LOAD_SIMM(R0, 0xDB, 24);
+    E_LOAD_SIMM(R1, 0x6D, 16);
+    E_LOAD_SIMM(R2, 0xB6, 8);
+    E_XOR(R0, R0, R1);
+    E_XOR(CFM, R0, R2);
+    E_HOLD();
+    E_GOTO("END_LOOP");    
+}
+
+
 
 
 //  R3  -   PAYLOAD LENGTH
@@ -313,7 +459,8 @@ E_LABEL("END");
 //  R5  -   TEMP FOR E_LOAD_32IMM
 //  R6  -   PARAM STRUCT ADDRESS
 //  R7  -   DEBUG PARAMETER POINTER 
-void ezh_app__spi_wr(void){
+void ezh_app__spi_wr(void)
+{
 
     E_NOP;
     E_NOP;
@@ -352,24 +499,6 @@ E_LABEL("TRANSFER_LOOP");
     E_GOSUB("TRANSFER_LOOP");
 
     E_GOTO("EOT");
-
-
-E_LABEL("EOT");
-    E_LOAD_32IMM(R0, SPI_FIFOWR__BASIC_CONFIG_RD_EOT);      // R0 = SPI_FIFOWR__BASIC_CONFIG_RD
-    E_GOSUB("SPI_WR_BYTE");
-
-E_LABEL("END");
-    E_PER_WRITE(R1, EZH2ARM);               // IRQ
-    
-E_LABEL("END_LOOP");   
-    E_LOAD_IMM(CFS, 0);
-    E_LOAD_SIMM(R0, 0xDB, 24);
-    E_LOAD_SIMM(R1, 0x6D, 16);
-    E_LOAD_SIMM(R2, 0xB6, 8);
-    E_XOR(R0, R0, R1);
-    E_XOR(CFM, R0, R2);
-    E_HOLD();
-    E_GOTO("END_LOOP");
 
 
 /*
@@ -439,6 +568,25 @@ E_LABEL("SPI_WR_32_BITS");
     E_GOTO_REG(RA);
     
     
+
+E_LABEL("EOT");
+    E_LOAD_32IMM(R0, SPI_FIFOWR__BASIC_CONFIG_WR_EOT);      // R0 = SPI_FIFOWR__BASIC_CONFIG_RD
+    E_LOAD_32IMM(R1, SPI8_FIFOWR_ADDR);                 // R1 = SPI8_FIFOWR_ADDR
+    E_STR(R1, R0, 0);
+    //E_GOSUB("SPI_WR_BYTE");
+
+E_LABEL("END");
+    E_PER_WRITE(R1, EZH2ARM);               // IRQ
+    
+E_LABEL("END_LOOP");   
+    E_LOAD_IMM(CFS, 0);
+    E_LOAD_SIMM(R0, 0xDB, 24);
+    E_LOAD_SIMM(R1, 0x6D, 16);
+    E_LOAD_SIMM(R2, 0xB6, 8);
+    E_XOR(R0, R0, R1);
+    E_XOR(CFM, R0, R2);
+    E_HOLD();
+    E_GOTO("END_LOOP");
 
 }
 

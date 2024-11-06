@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <zephyr/drivers/spi.h>
 
+
 #ifndef CONFIG_PSRAM_SIZE_BYTES
   #define CONFIG_PSRAM_SIZE_BYTES              0x200000
 #endif

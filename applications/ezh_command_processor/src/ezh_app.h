@@ -10,6 +10,8 @@ extern "C" {
 #endif
 
 #define SPI_RD_MAX_LENGTH   128
+#define CONFIG__SPI_SCK_FREQ    33000000
+
 
 typedef struct
 {

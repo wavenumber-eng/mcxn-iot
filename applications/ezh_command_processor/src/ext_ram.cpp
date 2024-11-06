@@ -255,6 +255,19 @@ int32_t ExtRAM::ezh_write(uint32_t address, uint32_t *data, uint32_t len)
 
     ezh_parameters.coprocessor_stack = (void *)ezh_stack;
     ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_wr_params);
+
+/*
+    TO USE WITH THE VERSION SIMILAR TO SPI_RD
+        ezh_spi_rd_params.cmd_and_addr =  (((uint8_t)PSRAM__WRITE) << 24) | (address & 0xffffff);      
+        ezh_spi_rd_params.wait_cycles =  0; // zero dummy cycles
+        
+        ezh_spi_rd_params.rx_buffer_length = len; // length in bytes
+        ezh_spi_rd_params.rx_buffer_ptr = (uint32_t *)(&data[0]);
+
+        ezh_parameters.coprocessor_stack = (void *)ezh_stack;
+        ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_rd_params);
+*/
+  
     ezh__execute_command(SPI_WRITE_APP, &ezh_parameters);
 
     // Probably later we can return the number of words/bytes written
