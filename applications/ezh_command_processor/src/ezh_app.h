@@ -12,6 +12,9 @@ extern "C" {
 #define SPI_RD_MAX_LENGTH   128
 #define CONFIG__SPI_SCK_FREQ    33000000
 
+
+bool ezh__command_complete();
+
 typedef struct
 {
     uint32_t cmd_and_addr;          // (cmd(8bits) << 24) | add(24bits)

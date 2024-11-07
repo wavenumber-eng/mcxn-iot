@@ -14,7 +14,7 @@
 #define LPC_EZH_ARCH_B_CON_BASE 			LPC_EZH_ARCH_B_CON_BASE__MCX
 #endif
 
-#define BUNNY_BUILD_PRINTF					 printk
+#define BUNNY_BUILD_PRINTF(...)					 printk(__VA_ARGS__);k_sleep(K_MSEC(1));
 #define BUNNY_BUILD_MAX_LABELS				 32
 
 

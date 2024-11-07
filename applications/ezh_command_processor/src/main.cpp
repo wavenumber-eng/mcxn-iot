@@ -17,7 +17,7 @@
 
 static ExtRAM ext_ram; // create RAM instaance
 
-static int monkey_handler(const struct shell *shell,
+static int gibbon_handler(const struct shell *shell,
 						  size_t argc,
 						  char **argv)
 {
@@ -47,7 +47,7 @@ static int monkey_handler(const struct shell *shell,
 	shell_fprintf(shell, SHELL_VT100_COLOR_YELLOW, "                   ██░░░░██        ██░░░░██            \r\n");
 	shell_fprintf(shell, SHELL_VT100_COLOR_YELLOW, "                   ██████            ██████            \r\n");
 	shell_fprintf(shell, SHELL_VT100_COLOR_YELLOW, "\r\n");
-	shell_fprintf(shell, SHELL_VT100_COLOR_CYAN, "                          I'm Super\r\n");
+	shell_fprintf(shell, SHELL_VT100_COLOR_CYAN, "                          i am gibbon\r\n");
 
 	return 0;
 }
@@ -64,6 +64,12 @@ static int psram_rdid_handler(const struct shell *shell,
 	return 0;
 }
 
+#define TEST_BUFFER_SIZE        128
+#define PSRAM_SIZE              0x200000
+
+uint8_t test_write_buffer[TEST_BUFFER_SIZE];
+uint8_t test_read_buffer[TEST_BUFFER_SIZE];
+
 static int psram_test_handler(const struct shell *shell,
 							  size_t argc,
 							  char **argv)
@@ -71,76 +77,81 @@ static int psram_test_handler(const struct shell *shell,
 	ARG_UNUSED(argc);
 	ARG_UNUSED(argv);
 
-	uint8_t test_write_buffer[32];
+	bool failed = false;
 
-	ext_ram.write(0, &test_write_buffer[0], sizeof(test_write_buffer));
+    for(uint32_t base_addr = 0; base_addr<PSRAM_SIZE; base_addr+=TEST_BUFFER_SIZE)
+    {
+    
+        for(int i=0; i<TEST_BUFFER_SIZE; i++)
+        {
+            test_write_buffer[i] = rand();
+        }
+
+        shell_print(shell,"Testing %d bytes at psram base address 0x%08x   \r",TEST_BUFFER_SIZE,base_addr);
+
+        ext_ram.write(base_addr,&test_write_buffer[0],TEST_BUFFER_SIZE);
+
+        //ext_ram.read(0,&test_read_buffer[0],TEST_BUFFER_SIZE);
+        ext_ram.fast_read(base_addr,&test_read_buffer[0],TEST_BUFFER_SIZE);
+
+        if(memcmp(test_write_buffer , test_read_buffer , TEST_BUFFER_SIZE)!=0)
+        {
+
+            shell_print(shell,"Memory test fail at base address 0x%08x",base_addr);
+
+            shell_print(shell,"Data write buffer : ");
+
+           shell_hexdump(shell,test_write_buffer,TEST_BUFFER_SIZE);
+
+            shell_print(shell,"Data read buffer : ");
+
+            shell_hexdump(shell,test_read_buffer,TEST_BUFFER_SIZE);
+            
+            failed = true;
+
+            return 0;
+        }
+
+
+    }
+
+
+    if(failed == false)
+    {
+        shell_print(shell,"\r\n Memory test passed");
+    }
+    
 	return 0;
 }
 
-
-void SPI8__init();
-
-SHELL_CMD_REGISTER(monkey, NULL, "I'm super.", monkey_handler);
-SHELL_CMD_REGISTER(psram_rdid, NULL, "psram_rdid", psram_rdid_handler);
-SHELL_CMD_REGISTER(psram_test, NULL, "psram_test", psram_test_handler);
-
-LOG_MODULE_REGISTER(main);
-
-static struct gpio_dt_spec io_dir_pin = GPIO_DT_SPEC_GET(DT_ALIAS(io_dir_pin), gpios);
 
 #define TEST_ARRAY_SIZE 128
 uint8_t spi_test_array[TEST_ARRAY_SIZE];
 uint8_t test_array[64 * 4];
 
+
+SHELL_CMD_REGISTER(gibbon, NULL, "i am gibbon", gibbon_handler);
+SHELL_CMD_REGISTER(psram_rdid, NULL, "psram_rdid", psram_rdid_handler);
+SHELL_CMD_REGISTER(psram_test, NULL, "psram_test", psram_test_handler);
+
+LOG_MODULE_REGISTER(main);
+
+
+
 int main(void)
 {
-	LOG_DBG("init psram ....");
-	//  ext_ram.Init();
-	LOG_DBG("...done");
-	
-	ezh__start_app();
-	SPI8__init();
-	LOG_DBG("SPI8 configured");
 
+	 ext_ram.Init();
 	
-	for (uint32_t i = 0; i < TEST_ARRAY_SIZE; i++)
-	{
-		spi_test_array[i] = i;
-	}
-
 	while (1)
 	{
-		//ext_ram.ezh_fast_read(0, (uint32_t * )&test_array[0], sizeof(test_array));
-		ext_ram.ezh_write(0x00112233, (uint32_t *)spi_test_array, TEST_ARRAY_SIZE);
-		k_sleep(K_MSEC(15));
+		//	ext_ram.read(0xFF, &spi_test_array[0], TEST_ARRAY_SIZE);
+		//	ext_ram.write(0xFF, &spi_test_array[0], TEST_ARRAY_SIZE);
+		
+
+		k_sleep(K_MSEC(100));
 	}
 
 	return 0;
 }
 
-
-
-void SPI8__init()
-{
-	// Direction pin for chip select on MCU-Link Pro
-	gpio_pin_configure_dt(&io_dir_pin, GPIO_OUTPUT);
-	gpio_pin_set_dt(&io_dir_pin, 1);
-
-	spi_master_config_t SPI_Config = {0};
-
-	CLOCK_AttachClk(kMAIN_CLK_to_HSLSPI);
-
-	// reset FLEXCOMM for SPI
-	RESET_PeripheralReset(kHSLSPI_RST_SHIFT_RSTn);
-
-	SPI_MasterGetDefaultConfig(&SPI_Config);
-
-	SPI_Config.sselNum = (spi_ssel_t)0;
-	SPI_Config.enableMaster = true;
-	SPI_Config.phase = (spi_clock_phase_t)0;
-	SPI_Config.polarity = (spi_clock_polarity_t)0;
-	SPI_Config.dataWidth = kSPI_Data8Bits;
-	SPI_Config.baudRate_Bps = CONFIG__SPI_SCK_FREQ;
-
-	SPI_MasterInit(SPI8, &SPI_Config, CLOCK_GetHsLspiClkFreq());
-}

@@ -16,19 +16,52 @@ EZHPWM_Para ezh_parameters;
 ezh_spi_params_t ezh_spi_params;
 
 
+static struct gpio_dt_spec io_dir_pin = GPIO_DT_SPEC_GET(DT_ALIAS(io_dir_pin), gpios);
+
+
+
+void SPI8__init()
+{
+	// Direction pin for chip select on MCU-Link Pro
+	gpio_pin_configure_dt(&io_dir_pin, GPIO_OUTPUT);
+	gpio_pin_set_dt(&io_dir_pin, 1);
+
+	spi_master_config_t SPI_Config = {0};
+
+	CLOCK_AttachClk(kMAIN_CLK_to_HSLSPI);
+
+	// reset FLEXCOMM for SPI
+	RESET_PeripheralReset(kHSLSPI_RST_SHIFT_RSTn);
+
+	SPI_MasterGetDefaultConfig(&SPI_Config);
+
+	SPI_Config.sselNum = (spi_ssel_t)0;
+	SPI_Config.enableMaster = true;
+	SPI_Config.phase = (spi_clock_phase_t)0;
+	SPI_Config.polarity = (spi_clock_polarity_t)0;
+	SPI_Config.dataWidth = kSPI_Data8Bits;
+	SPI_Config.baudRate_Bps = CONFIG__SPI_SCK_FREQ;
+
+	SPI_MasterInit(SPI8, &SPI_Config, CLOCK_GetHsLspiClkFreq());
+
+    
+	ezh__start_app();
+
+}
+
 ExtRAM::ExtRAM() : m_first(true)  {} 
 
 void ExtRAM::Init()
  {
-    int err; 
-    psram_spi_spec = SPI_DT_SPEC_GET(DT_NODELABEL(psram_spi), SPI_WORD_SET(8) | SPI_MODE_GET(0), 0);
 
-    if (!(err = spi_is_ready_dt(&psram_spi_spec))) 
-    {
-        LOG_ERR("Error: SPI device for the PSRAM is not ready, err: %d", err);
-        return;
-    }
+	LOG_DBG("init psram ....");
 
+	ezh__start_app();
+	SPI8__init();
+
+	LOG_DBG("SPI8 configured");
+    LOG_DBG("...done");
+	
     init_complete = true;
 
 }
@@ -66,90 +99,32 @@ void ExtRAM::RDID()
 
 int32_t ExtRAM::read(uint32_t address, uint8_t *data, uint32_t len)
 {
-        int err; 
+      
 
-        /*
-            1  byte command, 3 bytes dummy address and the data
-        */
-
-        uint8_t tx_cmd_buffer[4] ={PSRAM__READ,
-                                  (uint8_t)((address>>16)&0xff),
-                                  (uint8_t)((address>>8)&0xff),
-                                  (uint8_t)((address)&0xff)
-                                  };
+     ezh_fast_read(address,(uint32_t *)data, len);
 
 
-        uint8_t rx_cmd_dummy_buffer[4] ={0,0,0,0}; // needed to deal with the reponse during command phase
-        
-        struct spi_buf tx_spi_buf[2]=   {
-                                            {.buf = (void *)&tx_cmd_buffer, .len = sizeof(tx_cmd_buffer)},
-                                            {.buf = data, .len = len} //use the read buffer as dummy tx
-                                        };
+     while(ezh__command_complete() == false)
+     {
 
+     }
 
-        struct spi_buf_set tx_spi_buf_set 	= {.buffers = &tx_spi_buf[0], .count = 2};
-
-        struct spi_buf rx_spi_bufs[2] = {
-                                            {.buf = rx_cmd_dummy_buffer, .len = sizeof(rx_cmd_dummy_buffer)},
-                                            {.buf = data, .len = len}
-                                        };
-
-        struct spi_buf_set rx_spi_buf_set	= {.buffers = &rx_spi_bufs[0], .count = 2};
-
-        err = spi_transceive_dt(&psram_spi_spec, &tx_spi_buf_set, &rx_spi_buf_set);
-
-        if (err < 0) 
-        {
-            LOG_ERR("spi_transceive_dt() failed in read, err: %d", err);
-        }
-
-        return err;
-
+     return 0;
+      
 }
 
 
 int32_t ExtRAM::fast_read(uint32_t address, uint8_t *data, uint32_t len){
-        int err; 
-
-        /*
-            1  byte command, 3 bytes address, 1 byte wait,  and the data
-        */
-
-        uint8_t tx_cmd_buffer[5] ={PSRAM__FAST_READ,
-                                  (uint8_t)((address>>16)&0xff),
-                                  (uint8_t)((address>>8)&0xff),
-                                  (uint8_t)((address)&0xff),
-                                  0x00,
-                                  };
+     
+     ezh_fast_read(address,(uint32_t *)data, len);
 
 
+     while(ezh__command_complete() == false)
+     {
 
+     }
 
-        uint8_t rx_cmd_dummy_buffer[5] ={0,0,0,0,0}; 
-        
-        struct spi_buf tx_spi_buf[2]=   {
-                                            {.buf = (void *)&tx_cmd_buffer, .len = sizeof(tx_cmd_buffer)},
-                                            {.buf = data, .len = len} //use the read buffer as dummy tx
-                                        };
-
-
-        struct spi_buf_set tx_spi_buf_set 	= {.buffers = &tx_spi_buf[0], .count = 2};
-
-        struct spi_buf rx_spi_bufs[2] = {
-                                            {.buf = rx_cmd_dummy_buffer, .len = sizeof(rx_cmd_dummy_buffer)},
-                                            {.buf = data, .len = len}
-                                        };
-
-        struct spi_buf_set rx_spi_buf_set	= {.buffers = &rx_spi_bufs[0], .count = 2};
-
-        err = spi_transceive_dt(&psram_spi_spec, &tx_spi_buf_set, &rx_spi_buf_set);
-
-        if (err < 0) 
-        {
-            LOG_ERR("spi_transceive_dt() failed in read, err: %d", err);
-        }
-
-        return err;
+     return 0;
 
 }
 
@@ -159,89 +134,16 @@ uint16_t *spi_fifo_ctrl   =  (uint16_t *)(SPI8_BASE + 0xE22);
 
 int32_t ExtRAM::write(uint32_t address, uint8_t *data, uint32_t len)
 {
-        int err = 0; 
+      
 
-        /*
-            1  byte command, 3 bytes dummy address and the data
+    ezh_write(address,(uint32_t *)data, len);
 
-            ToDo:  THe zephyr SPI buffer chaining approach for has significant delay between 
-            transactions.   
+    while(ezh__command_complete() == false)
+    {
 
-        */
-/*
-        SPI8->FIFOCFG |= 3<<16; //Flush the Tx & Rx buffers
+    }
 
-        SPI8->FIFOCFG |= 1; // Enable the fifo
-
-        *spi_fifo_ctrl = (0x1) |
-                         (1<<(SPI_FIFOWR_RXIGNORE_SHIFT-16)) | 
-                         ((7)<<(SPI_FIFOWR_LEN_SHIFT-16));
-     
-    
-        *spi_8bit_fifo_wr = PSRAM__WRITE;      while((SPI8->FIFOSTAT & (1<<5)) == 0){}
-        *spi_8bit_fifo_wr =  (uint8_t)((address>>16)&0xff);      while((SPI8->FIFOSTAT & (1<<5)) == 0){}
-        *spi_8bit_fifo_wr  =  (uint8_t)((address>>8)&0xff);      while((SPI8->FIFOSTAT & (1<<5)) == 0){}
-        *spi_8bit_fifo_wr  =  (uint8_t)((address)&0xff);      while((SPI8->FIFOSTAT & (1<<5)) == 0){}
-*/
-
-/*
-        for(int i=0;i<len-1;i++)
-        {
-
-               while((SPI8->FIFOSTAT & (1<<5)) == 0){}
-            *spi_8bit_fifo_wr = data[i];
-
-        }
-
-
-               while((SPI8->FIFOSTAT & (1<<5)) == 0){}
-      *spi_fifo_ctrl =  (0x1) | (1<<(SPI_FIFOWR_EOT_SHIFT-16));
-      *spi_8bit_fifo_wr = data[(len-1)];
-      */
-
-     
-     
-        uint8_t tx_cmd_buffer[4] ={PSRAM__WRITE,
-                                  (uint8_t)((address>>16)&0xff),
-                                  (uint8_t)((address>>8)&0xff),
-                                  (uint8_t)((address)&0xff)
-        };
-
-
-    
-    
-        struct spi_buf tx_spi_buf[2]=   {
-                                            {.buf = (void *)&tx_cmd_buffer, .len = sizeof(tx_cmd_buffer)},
-                                            {.buf = data, .len = len} 
-                                        };
-        
-
-        struct spi_buf_set tx_spi_buf_set 	= {.buffers = &tx_spi_buf[0], .count = 2};
-     
-
-     uint8_t rx_cmd_dummy_buffer[4] ={0,0,0,0}; // needed to deal with the reponse during command phase.
-        
-
-        //todo - improve this...  switch to te patch spi driver that can do a tx blast
-
-        struct spi_buf rx_spi_bufs[2] = {
-                                            {.buf = rx_cmd_dummy_buffer, .len = sizeof(rx_cmd_dummy_buffer)},
-                                            {.buf = NULL, .len = 0}//use the write buffer as dummy rx
-                                        };
-
-        struct spi_buf_set rx_spi_buf_set	= {.buffers = &rx_spi_bufs[0], .count = 2};
-
-   
-
-        err = spi_transceive_dt(&psram_spi_spec, &tx_spi_buf_set, &rx_spi_buf_set);
-
-        if (err < 0) 
-        {
-            LOG_ERR("spi_transceive_dt() failed in write, err: %d", err);
-        }
-
-        return err;
-
+    return 0;
 }
 
 
@@ -285,6 +187,8 @@ int32_t ExtRAM::ezh_fast_read(uint32_t address, uint32_t *rx_buffer, uint32_t le
 
     ezh_parameters.coprocessor_stack = (void *)ezh_stack;
     ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_params);
+
+    SPI8->FIFOCFG = 0x0303;
     ezh__execute_command(SPI_READ_APP, &ezh_parameters);
 
     return 0;

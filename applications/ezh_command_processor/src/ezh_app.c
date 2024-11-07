@@ -38,9 +38,14 @@ void ezh_app__spi_rd(void);
 #if defined(CONFIG_BOARD_GIBBON_D_LPC55S69_CPU0) | defined(CONFIG_BOARD_LPCXPRESSO55S69_LPC55S69_CPU0)
 
 #define EZH__Reserved46_IRQn (IRQn_Type)30
+
+static volatile bool last_ezh_op_complete = true;
+
 ISR_DIRECT_DECLARE(Reserved46_IRQHandler__EZH)
 {
     EZH_SetExternalFlag(1);
+
+    last_ezh_op_complete=true;
 
     test_val = LPC_EZH_ARCH_B0->EZHB_EZH2ARM;
     EZH_stop();
@@ -133,7 +138,7 @@ void ezh__start_app()
 
 void ezh__execute_command(uint8_t cmd, EZHPWM_Para * ezh_parameters_ptr)
 {
-    uint32_t * selected_program;
+    uint32_t * selected_program = my_ezh_program1;
 
     switch (cmd)
     {
@@ -157,8 +162,13 @@ void ezh__execute_command(uint8_t cmd, EZHPWM_Para * ezh_parameters_ptr)
         break;
     }
 
-
+    last_ezh_op_complete=false;
     EZH_init_and_boot(selected_program, ezh_parameters_ptr);
+}
+
+bool ezh__command_complete()
+{
+    return last_ezh_op_complete;
 }
 
 void ezh_app__toggle1(void)
@@ -290,6 +300,9 @@ E_LABEL("END");
 #if defined(CONFIG_BOARD_GIBBON_D_LPC55S69_CPU0)  | defined(CONFIG_BOARD_LPCXPRESSO55S69_LPC55S69_CPU0)
 #define SPI8_FIFOWR_ADDR            (SPI8_BASE + 0xE20)  
 #define SPI8_FIFORD_ADDR            (SPI8_BASE + 0xE30)  
+
+#define SPI8_FIFOCFG_ADDR            (SPI8_BASE + 0xE00)  
+
 #define SPI_FIFOWR__BASIC_CONFIG_WR    ((1 << 22) | (7 << 24))                                  //Activating all chip selects
 
 #define SPI_FIFOWR__BASIC_CONFIG_WR_EOT  ((1 << 22) | (7 << 24) | (0xf<<16) | (1<<20))         //Note:  deactiving all chip selects
@@ -595,7 +608,7 @@ E_LABEL("END_LOOP");
 }
 
 
-#define SPI_READ_JUNK_BYTE  0XBB
+#define SPI_READ_JUNK_BYTE  0XAA
 
 void ezh_app__spi_rd(void)
 {
@@ -654,14 +667,34 @@ E_LABEL("DONT_CARE_BYTES_LOOP");
 
     // READ INCOMING BYTES AND PUT THEM IN THE PARAMS BUFFER
 E_LABEL("READ_BYTES");
-    E_LOAD_32IMM(R0, SPI_FIFOWR__BASIC_CONFIG_RD);      // R0 = SPI_FIFOWR__BASIC_CONFIG_RD
-    E_OR_IMM(R0, R0, SPI_READ_JUNK_BYTE);
 
-    E_LOAD_32IMM(R1, SPI8_FIFOWR_ADDR);                 // R1 = SPI8_FIFOWR_ADDR
     E_LDR(R2, R7, 2);                                   // R2 = NUM OF BYTES TO READ
     E_LOAD_32IMM(R3, SPI8_FIFORD_ADDR);                 // R1 = SPI8_FIFORD_ADDR
     E_LDR(R5, R7, 3);                                   // R3 = RX_BUFF PTR
     E_ADD_IMMS(R2, R2, 0);                              // UPDATE FLAGS
+
+
+    //clear fifos
+    E_LOAD_32IMM(R1, SPI8_FIFOCFG_ADDR);       
+    E_LOAD_32IMM(R0,0x00030003);               
+    E_STR(R1, R0, 0);
+
+    //setup spi write reg
+    E_LOAD_32IMM(R0, SPI_FIFOWR__BASIC_CONFIG_RD);      // R0 = SPI_FIFOWR__BASIC_CONFIG_RD
+    E_OR_IMM(R0, R0, SPI_READ_JUNK_BYTE);
+
+    E_LOAD_32IMM(R1, SPI8_FIFOWR_ADDR);                 // R1 = SPI8_FIFOWR_ADDR
+
+
+    //start TX pipeline w/ two writes 
+    //Todo...  poll for data ready in before entering loop
+    E_GOSUB("SPI_WR_BYTE"); 
+    E_GOSUB("SPI_WR_BYTE"); 
+    E_WAIT_FOR_BEAT();
+    E_WAIT_FOR_BEAT();
+    E_WAIT_FOR_BEAT();
+    E_WAIT_FOR_BEAT();
+    E_SUB_IMMS(R2, R2, 2); 
 
 
 E_LABEL("READ_BYTES_LOOP");
@@ -689,12 +722,24 @@ E_LABEL("NEXT_BYTE_OUT");
 
     E_SUB_IMMS(R2, R2, 1); 
     
-    E_COND_GOTO(ZE, "END");
+    E_COND_GOTO(ZE, "END2");
 
     E_GOSUB("READ_BYTES_LOOP");
 
     E_GOTO("END");
 
+
+E_LABEL("END2");
+     E_WAIT_FOR_BEAT();
+     E_WAIT_FOR_BEAT();
+     E_WAIT_FOR_BEAT();
+
+     //clear rx fifos
+     E_LDR(R4, R3, 0);
+     E_STRB_POST(R5, R4, 1);
+     E_LDR(R4, R3, 0);
+     E_STRB_POST(R5, R4, 1);
+     E_GOTO("END");
 /*
     SPI_WR_BYTE
         R0  -   CURRENT BYTE TO TRANSMIT    -   ARG
