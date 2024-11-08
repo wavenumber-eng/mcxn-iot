@@ -20,7 +20,9 @@ class ExtRAM {
   public:
     ExtRAM();
     void Init();
-    void RDID();
+    
+    uint16_t RDID();
+
     //Read only works when clock speed <=33MHz
 
     int32_t read(uint32_t address, uint8_t *data, uint32_t len);

@@ -14,7 +14,6 @@
 #include <fsl_sysctl.h>
 
 
-
 static ExtRAM ext_ram; // create RAM instaance
 
 static int gibbon_handler(const struct shell *shell,
@@ -59,7 +58,9 @@ static int psram_rdid_handler(const struct shell *shell,
 	ARG_UNUSED(argc);
 	ARG_UNUSED(argv);
 
-	ext_ram.RDID();
+	uint16_t RDID_Code = ext_ram.RDID();
+
+	shell_print(shell,"RDID: 0x%04x\r",RDID_Code);
 
 	return 0;
 }
@@ -128,7 +129,6 @@ static int psram_test_handler(const struct shell *shell,
 #define TEST_ARRAY_SIZE 128
 uint8_t spi_test_array[TEST_ARRAY_SIZE];
 uint8_t test_array[64 * 4];
-
 
 SHELL_CMD_REGISTER(gibbon, NULL, "i am gibbon", gibbon_handler);
 SHELL_CMD_REGISTER(psram_rdid, NULL, "psram_rdid", psram_rdid_handler);

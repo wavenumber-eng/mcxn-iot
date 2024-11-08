@@ -33,17 +33,14 @@ typedef struct _EZHPWM_Para
 
 typedef enum
 {
-    TOGGLE1_APP,
-    TOGGLE2_APP,
     SPI_WRITE_APP,
     SPI_READ_APP,
-
     EZH_APP_QTY,
 } ezh_applications_e;
 
 
-void ezh_app(void);
-void ezh__start_app();
+
+void ezh__build_apps();
 void ezh__execute_command(uint8_t cmd, EZHPWM_Para * ezh_parameters);
 
 #ifdef __cplusplus

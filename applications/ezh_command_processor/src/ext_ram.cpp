@@ -5,8 +5,11 @@
 
 #include "fsl_common.h"
 #include "fsl_clock.h"
+#include "fsl_iocon.h"
+
 #include "ezh_app.h"
 #include "fsl_spi.h"
+
 LOG_MODULE_REGISTER(psram, LOG_LEVEL_DBG);
 
 // This variables must be global
@@ -15,16 +18,47 @@ uint32_t ezh_debug_params[10];
 EZHPWM_Para ezh_parameters;
 ezh_spi_params_t ezh_spi_params;
 
+#ifdef CONFIG_USE_MCU_LINK_PRO
+    static struct gpio_dt_spec io_dir_pin = GPIO_DT_SPEC_GET(DT_ALIAS(io_dir_pin), gpios);
+#endif
 
-static struct gpio_dt_spec io_dir_pin = GPIO_DT_SPEC_GET(DT_ALIAS(io_dir_pin), gpios);
+#define IOCON_PIO_DIGITAL_EN 0x0100u  /*!<@brief Enables digital function */
+#define IOCON_PIO_FUNC1 0x01u         /*!<@brief Selects pin function 1 */
+#define IOCON_PIO_FUNC5 0x05u         /*!<@brief Selects pin function 5 */
+#define IOCON_PIO_FUNC6 0x06u         /*!<@brief Selects pin function 6 */
+#define IOCON_PIO_FUNC9 0x09u         /*!<@brief Selects pin function 9 */
+#define IOCON_PIO_INV_DI 0x00u        /*!<@brief Input function is not inverted */
+#define IOCON_PIO_MODE_INACT 0x00u    /*!<@brief No addition pin function */
+#define IOCON_PIO_MODE_PULLUP 0x20u   /*!<@brief Selects pull-up function */
+#define IOCON_PIO_OPENDRAIN_DI 0x00u  /*!<@brief Open drain is disabled */
+#define IOCON_PIO_SLEW_STANDARD 0x00u /*!<@brief Standard mode, output slew rate control is enabled */
 
+
+    const uint32_t port1_pin1_config = (/* Pin is configured as HS_SPI_SSEL1 */
+                                        IOCON_PIO_FUNC5 |
+                                        /* Selects pull-up function */
+                                        IOCON_PIO_MODE_PULLUP |
+                                        /* Standard mode, output slew rate control is enabled */
+                                        IOCON_PIO_SLEW_STANDARD |
+                                        /* Input function is not inverted */
+                                        IOCON_PIO_INV_DI |
+                                        /* Enables digital function */
+                                        IOCON_PIO_DIGITAL_EN |
+                                        /* Open drain is disabled */
+                                        IOCON_PIO_OPENDRAIN_DI);
 
 
 void SPI8__init()
 {
+
 	// Direction pin for chip select on MCU-Link Pro
-	gpio_pin_configure_dt(&io_dir_pin, GPIO_OUTPUT);
-	gpio_pin_set_dt(&io_dir_pin, 1);
+	#ifdef CONFIG_USE_MCU_LINK_PRO
+        gpio_pin_configure_dt(&io_dir_pin, GPIO_OUTPUT);
+	    gpio_pin_set_dt(&io_dir_pin, 1);
+    #else
+        /* PORT1 PIN1 (coords: 59) is configured as HS_SPI_SSEL1 */
+        IOCON_PinMuxSet(IOCON, 1U, 1U, port1_pin1_config);
+    #endif
 
 	spi_master_config_t SPI_Config = {0};
 
@@ -44,56 +78,33 @@ void SPI8__init()
 
 	SPI_MasterInit(SPI8, &SPI_Config, CLOCK_GetHsLspiClkFreq());
 
-    
-	ezh__start_app();
-
 }
 
 ExtRAM::ExtRAM() : m_first(true)  {} 
 
 void ExtRAM::Init()
  {
-
-	LOG_DBG("init psram ....");
-
-	ezh__start_app();
+	ezh__build_apps();
 	SPI8__init();
-
-	LOG_DBG("SPI8 configured");
-    LOG_DBG("...done");
-	
     init_complete = true;
 
 }
 
-void ExtRAM::RDID()
+uint16_t ExtRAM::RDID()
 {
-        int err; 
 
-        /*
-            1  byte command, 3 bytes dummy address and 2 bytes for the response
-        */
+    uint16_t RDID_Code;
 
-        uint8_t tx_buffer[6] ={PSRAM__RDID,0,0,0,0,0};
-        uint8_t rx_buffer[6] ={0,0,0,0,0,0};
-        
-        struct spi_buf tx_spi_buf		= {.buf = (void *)&tx_buffer, .len = sizeof(tx_buffer)};
-        struct spi_buf_set tx_spi_buf_set 	= {.buffers = &tx_spi_buf, .count = 1};
+    ezh_spi_params.cmd_and_addr =  (PSRAM__RDID << 24);  
+    ezh_spi_params.wait_cycles =  0; // zero dummy cycles
+    
+    ezh_spi_params.rx_buffer_length = sizeof(RDID_Code); // length in bytes
+    ezh_spi_params.rx_buffer_ptr = (uint32_t *)(&RDID_Code);
 
-        struct spi_buf rx_spi_bufs 		= {.buf = rx_buffer, .len = sizeof(rx_buffer)};
-        struct spi_buf_set rx_spi_buf_set	= {.buffers = &rx_spi_bufs, .count = 1};
+    ezh_parameters.coprocessor_stack = (void *)ezh_stack;
+    ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_params);
 
-        err = spi_transceive_dt(&psram_spi_spec, &tx_spi_buf_set, &rx_spi_buf_set);
-
-        if (err < 0) 
-        {
-            LOG_ERR("spi_transceive_dt() failed in RDID, err: %d", err);
-        }
-        else
-        {
-            LOG_INF("RDID bytes : 0x%02x 0x%02x",rx_buffer[4],rx_buffer[5]);
-        }
-
+     return RDID_Code;
 }
 
 
@@ -150,16 +161,6 @@ int32_t ExtRAM::write(uint32_t address, uint8_t *data, uint32_t len)
 
 int32_t ExtRAM::ezh_write(uint32_t address, uint32_t *data, uint32_t len)
 {
-    // To use with the older version
-/*
-    ezh_spi_wr_params.cmd_and_addr = (((uint8_t)PSRAM__WRITE) << 24) | (address & 0xffffff);
-    ezh_spi_wr_params.data_buffer_length = len;
-    ezh_spi_wr_params.data_buffer = data;
-
-    ezh_parameters.coprocessor_stack = (void *)ezh_stack;
-    ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_wr_params);
-*/
-
 //    TO USE WITH THE VERSION SIMILAR TO SPI_RD
         ezh_spi_params.cmd_and_addr =  (((uint8_t)PSRAM__WRITE) << 24) | (address & 0xffffff);      
         ezh_spi_params.wait_cycles =  0; // zero dummy cycles
@@ -188,7 +189,6 @@ int32_t ExtRAM::ezh_fast_read(uint32_t address, uint32_t *rx_buffer, uint32_t le
     ezh_parameters.coprocessor_stack = (void *)ezh_stack;
     ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_params);
 
-    SPI8->FIFOCFG = 0x0303;
     ezh__execute_command(SPI_READ_APP, &ezh_parameters);
 
     return 0;

@@ -11,10 +11,9 @@ target_include_directories(app PUBLIC ../../../modules/hal/nxp/mcux/mcux-sdk/dri
 target_include_directories(app PRIVATE ./src)                            
 
 target_sources(app PRIVATE  src/main.cpp
-                            src/t2.c
                             src/ext_ram.cpp
                             src/ezh_app.c
-                            )
+                        )
 
 target_sources(app PRIVATE ../../../modules/bunny_build/src/bunny_build.c)
 target_sources(app PRIVATE ../../../modules/bunny_build/src/ezh_init.c)

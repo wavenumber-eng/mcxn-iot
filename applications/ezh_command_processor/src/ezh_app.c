@@ -9,18 +9,23 @@
 #include "bunny_build.h"
 #include "fsl_device_registers.h"
 
-uint32_t test_val = 0;
+
+
+
+
+__attribute((section("SRAMX_EZH"))) uint32_t ezh_ram[512];
+
+
 
 // EZH APPLICATIONS
 
 #define CONFIG_BOARD_LPCXPRESSO55S69_LPC55S69_CPU0
 
-
 #if defined(CONFIG_BOARD_GIBBON_D_LPC55S69_CPU0) | defined(CONFIG_BOARD_LPCXPRESSO55S69_LPC55S69_CPU0)
-__attribute((section("SRAMX_EZH"))) uint32_t my_ezh_program1[128]; // Todo relocate into fast SRAMX - no contention 
-__attribute((section("SRAMX_EZH"))) uint32_t my_ezh_program2[128]; // Todo relocate into fast SRAMX - no contention 
-__attribute((section("SRAMX_EZH"))) uint32_t my_ezh_program3[512]; // Todo relocate into fast SRAMX - no contention 
-__attribute((section("SRAMX_EZH"))) uint32_t my_ezh_program4[512]; // Todo relocate into fast SRAMX - no contention 
+__attribute((section("SRAMX_EZH"))) uint32_t ezh_app0[256];
+__attribute((section("SRAMX_EZH"))) uint32_t ezh_app1[256];
+
+
 #elif defined (CONFIG_BOARD_FRDM_MCXN947_MCXN947_CPU0)
 __attribute((section("SRAM1"))) uint32_t my_ezh_program1[128]; // Todo relocate into fast SRAMX - no contention 
 __attribute((section("SRAM1"))) uint32_t my_ezh_program2[128]; // Todo relocate into fast SRAMX - no contention 
@@ -40,7 +45,8 @@ void ezh_app__spi_rd(void);
 #define EZH__Reserved46_IRQn (IRQn_Type)30
 
 static volatile bool last_ezh_op_complete = true;
-
+uint32_t ezh_app_offset[8];
+uint32_t test_val;
 ISR_DIRECT_DECLARE(Reserved46_IRQHandler__EZH)
 {
     EZH_SetExternalFlag(1);
@@ -72,7 +78,7 @@ ISR_DIRECT_DECLARE(EZH_INTERRUPT_ISR)
 
 LOG_MODULE_REGISTER(EZH_MGR);
 
-void ezh__start_app()
+void ezh__build_apps()
 {
 
 #if defined(CONFIG_BOARD_GIBBON_D_LPC55S69_CPU0) | defined(CONFIG_BOARD_LPCXPRESSO55S69_LPC55S69_CPU0)
@@ -89,7 +95,6 @@ void ezh__start_app()
     CLOCK_EnableClock(kCLOCK_Ezhb); // enable EZH clock
 
     irq_enable(EZH__Reserved46_IRQn); // EZH irq number 30
-
 
 #elif defined (CONFIG_BOARD_FRDM_MCXN947_MCXN947_CPU0)
     CLOCK_EnableClock(kCLOCK_Gpio1);
@@ -113,57 +118,53 @@ void ezh__start_app()
 #endif
 
 
-//    LOG_INF("\n\nBUILDING PROGRAM 1");
-//    bunny_build(&my_ezh_program1[0],
-//                sizeof(my_ezh_program1),
-//                ezh_app__toggle1);
-//
-//    LOG_INF("\n\nBUILDING PROGRAM 2");
-//    bunny_build(&my_ezh_program2[0],
-//                sizeof(my_ezh_program2),
-//                ezh_app__toggle2);
+   uint32_t last_idx=0;
+   uint32_t num_ezh_apps=0;
 
-    LOG_INF("\n\nBUILDING PROGRAM 3");
-    bunny_build(&my_ezh_program3[0],
-                sizeof(my_ezh_program3),
+   ezh_app_offset[SPI_WRITE_APP] = last_idx;
+
+   last_idx += bunny_build(&ezh_ram[ezh_app_offset[SPI_WRITE_APP]],
+                sizeof(ezh_app0),
                 ezh_app__spi_wr);
 
+   num_ezh_apps++;
 
-    LOG_INF("\n\nBUILDING PROGRAM 4");
-    bunny_build(&my_ezh_program4[0],
-                sizeof(my_ezh_program4),
-                ezh_app__spi_rd);
+   ezh_app_offset[SPI_READ_APP] = 256;
+
+   last_idx += bunny_build(&ezh_ram[ ezh_app_offset[SPI_READ_APP]],
+                    sizeof(ezh_app1),
+                    ezh_app__spi_rd);
+   num_ezh_apps++;
+
+
+   BUNNY_BUILD_PRINTF("Built %d ezh apps using a total of %d bytes\r\n",num_ezh_apps,last_idx*4);
+
 
 }
 
+uint32_t * selected_program = 0;
+uint32_t offset = 0;
+
 void ezh__execute_command(uint8_t cmd, EZHPWM_Para * ezh_parameters_ptr)
 {
-    uint32_t * selected_program = my_ezh_program1;
-
-    switch (cmd)
+    if(cmd<EZH_APP_QTY)
     {
-    case TOGGLE1_APP:
-        selected_program = my_ezh_program1; // start EZH
-        break;
+        offset = ezh_app_offset[cmd];
+        selected_program = &ezh_ram[offset];
+       // selected_program =  &ezh_ram[ezh_app_offset[cmd]];
 
-    case TOGGLE2_APP:
-        selected_program = my_ezh_program2; // start EZH
-        break;
 
-    case SPI_WRITE_APP:
-        selected_program = my_ezh_program3; // start EZH
-        break;
+    //the offset array gets trashed after teh 1st call...
 
-    case SPI_READ_APP:
-        selected_program = my_ezh_program4; // start EZH
-        break;
+        if(cmd == 0)
+            selected_program = &ezh_ram[0];
+        else
+            selected_program = &ezh_ram[256];
 
-    default:
-        break;
+        last_ezh_op_complete=false;
+
+        EZH_init_and_boot(selected_program, ezh_parameters_ptr);
     }
-
-    last_ezh_op_complete=false;
-    EZH_init_and_boot(selected_program, ezh_parameters_ptr);
 }
 
 bool ezh__command_complete()
