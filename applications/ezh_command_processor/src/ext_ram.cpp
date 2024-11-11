@@ -90,10 +90,12 @@ void ExtRAM::Init()
 
 }
 
+ uint32_t RDID_Code;
+
 uint16_t ExtRAM::RDID()
 {
 
-    uint16_t RDID_Code;
+
 
     ezh_spi_params.cmd_and_addr =  (PSRAM__RDID << 24);  
     ezh_spi_params.wait_cycles =  0; // zero dummy cycles
@@ -103,6 +105,14 @@ uint16_t ExtRAM::RDID()
 
     ezh_parameters.coprocessor_stack = (void *)ezh_stack;
     ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_params);
+
+
+   ezh__execute_command(SPI_READ_APP, &ezh_parameters);
+
+     while(ezh__command_complete() == false)
+     {
+
+     }
 
      return RDID_Code;
 }
@@ -115,10 +125,7 @@ int32_t ExtRAM::read(uint32_t address, uint8_t *data, uint32_t len)
      ezh_fast_read(address,(uint32_t *)data, len);
 
 
-     while(ezh__command_complete() == false)
-     {
 
-     }
 
      return 0;
       
