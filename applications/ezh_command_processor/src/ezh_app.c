@@ -37,7 +37,7 @@ void ezh_app__toggle2(void);
 void ezh_app__spi_wr(void);
 void ezh_app__spi_rd(void);
 
-#define EZH_TEST_GPIO_1 24
+#define EZH_TEST_GPIO_1 18
 #define EZH_TEST_GPIO_2 25
 
 #if defined(CONFIG_BOARD_GIBBON_D_LPC55S69_CPU0) | defined(CONFIG_BOARD_LPCXPRESSO55S69_LPC55S69_CPU0)
@@ -89,7 +89,7 @@ void ezh__build_apps()
     irq_disable(EZH__Reserved46_IRQn); // EZH irq NUMBER 30
     IRQ_DIRECT_CONNECT(EZH__Reserved46_IRQn, 0, Reserved46_IRQHandler__EZH, 0) // IRQ_ZERO_LATENCY doesn't build yet
 
-    IOCON->PIO[0][24] = PINFUNC_EZH | 2 << 4 | 1 << 8;
+    IOCON->PIO[0][18] = PINFUNC_EZH | 2 << 4 | 1 << 8;
     IOCON->PIO[0][25] = PINFUNC_EZH | 2 << 4 | 1 << 8;
 
     CLOCK_EnableClock(kCLOCK_Ezhb); // enable EZH clock
@@ -301,8 +301,8 @@ E_LABEL("END");
 #if defined(CONFIG_BOARD_GIBBON_D_LPC55S69_CPU0)  | defined(CONFIG_BOARD_LPCXPRESSO55S69_LPC55S69_CPU0)
 #define SPI8_FIFOWR_ADDR            (SPI8_BASE + 0xE20)  
 #define SPI8_FIFORD_ADDR            (SPI8_BASE + 0xE30)  
-
-#define SPI8_FIFOCFG_ADDR            (SPI8_BASE + 0xE00)  
+#define SPI8_FIFOCFG_ADDR           (SPI8_BASE + 0xE00)  
+#define SPI8_FIFOSTAT_ADDR          (SPI8_BASE + 0XE04)
 
 #define SPI_FIFOWR__BASIC_CONFIG_WR    ((1 << 22) | (7 << 24))                                  //Activating all chip selects
 
@@ -319,14 +319,15 @@ E_LABEL("END");
 
 
 #if defined(CONFIG__SPI_SCK_FREQ) && (CONFIG__SPI_SCK_FREQ == 10000000)
-#define MAGIC_RYTHM (7 * 15)  //for 10MHz
+#define MAGIC_RYTHM ((7 * 15) + 6)  //for 10MHz
 #elif defined(CONFIG__SPI_SCK_FREQ) && (CONFIG__SPI_SCK_FREQ == 25000000)
-#define MAGIC_RYTHM (7 * 5) //for 25MHz
+#define MAGIC_RYTHM ((7 * 5) + 18 ) //for 25MHz
 #elif defined(CONFIG__SPI_SCK_FREQ) && (CONFIG__SPI_SCK_FREQ == 33000000)
-#define MAGIC_RYTHM (10) //for 33MHz
+#define MAGIC_RYTHM (15) //for 33MHz
 #else
 #error "SPI_SCK_FREQ NOT DEFINED"
 #endif
+
 
 
 /*
@@ -470,146 +471,8 @@ E_LABEL("END_LOOP");
 }
 
 
-
-
-//  R3  -   PAYLOAD LENGTH
-//  R4  -   PAYLOAD PTR
-//  R5  -   TEMP FOR E_LOAD_32IMM
-//  R6  -   PARAM STRUCT ADDRESS
-//  R7  -   DEBUG PARAMETER POINTER 
-void old_ezh_app__spi_wr(void)
-{
-
-    E_NOP;
-    E_NOP;
-
-    E_PER_READ(R6, ARM2EZH);                    // Read the base address of the parameters into R6
-    E_LSR(R6, R6, 2);                           // make sure parameter structure 32-bit aligned
-    E_LSL(R6, R6, 2); 
-    E_LDR(SP, R6, 0);                           // load stack pointer from the 1st 32-bit word of the parameter struct
-
-    E_LDR(R7, R6, 1);                           // R7 -> load the base address the parameters struct
-
-    E_BSET_IMM(GPD, GPD, EZH_TEST_GPIO_1);
-    E_BSET_IMM(GPD, GPD, EZH_TEST_GPIO_2);
-    E_BCLR_IMM(GPO, GPO, EZH_TEST_GPIO_1);
-    E_BCLR_IMM(GPO, GPO, EZH_TEST_GPIO_2);
-
-    E_HEART_RYTHM_IMM(MAGIC_RYTHM);
-
-    E_ADD_IMM(R0, R7, 0);                       // R0 = cmd_and_addr
-    E_GOSUB("SPI_WR_32_BITS");
-
-    E_LDR(R1, R7, 1);                           // R1 = payload length
-
-    E_LOAD_IMM(R4, 0);                          // Transaction word index    
-    E_LDR(R7, R7, 2);                           // Load the address of the payload pointer
-    E_ADD_IMMS(R1, R1, 0);                      
-
-E_LABEL("TRANSFER_LOOP");
-    E_COND_GOTO(ZE, "EOT");                     
-
-    E_ADD(R0, R7, R4);                          // Put the address of the current word in R0
-    E_GOSUB("SPI_WR_32_BITS");
-    
-    E_ADD_IMM(R4, R4, 4);                       // update Transaction word index
-    E_SUB_IMMS(R1, R1, 1);                     
-    E_GOSUB("TRANSFER_LOOP");
-
-    E_GOTO("EOT");
-
-
-/*
-    SPI_WR_BYTE
-        R0  -   CURRENT BYTE TO TRANSMIT    -   ARG
-*/
-E_LABEL("SPI_WR_BYTE");
-    E_PUSH(RA);
-    E_PUSH(R1);
-    E_LOAD_32IMM(R1, SPI8_FIFOWR_ADDR);                 // R1 = SPI8_FIFOWR_ADDR
-    E_STR(R1, R0, 0);
-    E_WAIT_FOR_BEAT();
-    E_POP(R1);
-    E_POP(RA);
-    E_GOTO_REG(RA);
-
-
-/*
-    SPI_WR_XX_BITS
-    R0  -   ADDRESS OF THE 32-BIT value to transmit
-    R1  -   CURRENT BYTE TO TRANSMIT
-    R2  -   SPI TRANSACTION CONFIGS + BYTE TO WRITE
-    R3  -   SPI8_FIFOWR_ADDR
-*/
-E_LABEL("SPI_WR_32_BITS");
-    E_PUSH(RA);
-    E_PUSH(R1);
-    E_PUSH(R2);
-    E_PUSH(R3);   
-
-    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
-    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
-
-    E_LOAD_32IMM(R3, SPI8_FIFOWR_ADDR);             // R3 = SPI8_FIFOWR_ADDR
-    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR);     // R2 = SPI_FIFOWR__BASIC_CONFIG
-    E_LDRB(R1, R0, 3);              
-    E_OR(R2, R2, R1);
-    E_STR(R3, R2, 0);
-    E_WAIT_FOR_BEAT();
-
-    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR); 
-    E_LDRB(R1, R0, 2); 
-    E_OR(R2, R2, R1);
-    E_STR(R3, R2, 0);
-    E_WAIT_FOR_BEAT();
-
-    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR);
-    E_LDRB(R1, R0, 1);
-    E_OR(R2, R2, R1);
-    E_STR(R3, R2, 0);
-    E_WAIT_FOR_BEAT();
-
-
-    E_LOAD_32IMM(R2, SPI_FIFOWR__BASIC_CONFIG_WR);
-    E_LDRB(R1, R0, 0);
-    E_OR(R2, R2, R1);
-    E_STR(R3, R2, 0);   
-    E_WAIT_FOR_BEAT();
-    
-    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
-    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_2); 
-
-    E_POP(R3);
-    E_POP(R2);
-    E_POP(R1);
-    E_POP(RA);
-    E_GOTO_REG(RA);
-    
-    
-
-E_LABEL("EOT");
-    E_LOAD_32IMM(R0, SPI_FIFOWR__BASIC_CONFIG_WR_EOT);      // R0 = SPI_FIFOWR__BASIC_CONFIG_RD
-    E_LOAD_32IMM(R1, SPI8_FIFOWR_ADDR);                 // R1 = SPI8_FIFOWR_ADDR
-    E_STR(R1, R0, 0);
-    //E_GOSUB("SPI_WR_BYTE");
-
-E_LABEL("END");
-    E_PER_WRITE(R1, EZH2ARM);               // IRQ
-    
-E_LABEL("END_LOOP");   
-    E_LOAD_IMM(CFS, 0);
-    E_LOAD_SIMM(R0, 0xDB, 24);
-    E_LOAD_SIMM(R1, 0x6D, 16);
-    E_LOAD_SIMM(R2, 0xB6, 8);
-    E_XOR(R0, R0, R1);
-    E_XOR(CFM, R0, R2);
-    E_HOLD();
-    E_GOTO("END_LOOP");
-
-}
-
-
-#define SPI_READ_JUNK_BYTE  0XAA
+#define SPI_READ_JUNK_BYTE  0X00
+#define START_RXLVL     2 
 
 void ezh_app__spi_rd(void)
 {
@@ -622,6 +485,10 @@ void ezh_app__spi_rd(void)
     E_LDR(SP, R6, 0);                           // load stack pointer from the 1st 32-bit word of the parameter struct
     E_LDR(R7, R6, 1);                           // R7 -> load the base address the parameters struct
 
+    E_LOAD_32IMM(R3, SPI8_FIFORD_ADDR);                 // R3 = SPI8_FIFORD_ADDR
+    E_LDR(R5, R7, 3);                                   // R5 = RX_BUFF PTR
+
+
     E_BSET_IMM(GPD, GPD, EZH_TEST_GPIO_1);
     E_BSET_IMM(GPD, GPD, EZH_TEST_GPIO_2);
     E_BCLR_IMM(GPO, GPO, EZH_TEST_GPIO_1);
@@ -629,130 +496,111 @@ void ezh_app__spi_rd(void)
 
     E_HEART_RYTHM_IMM(MAGIC_RYTHM);
 
-
     // Transmit CMD + ADDR
     E_ADD_IMM(R0, R7, 0);                               // R0 = cmd_and_addr
     E_GOSUB("SPI_WR_32_BITS");
 
-    //this was causing delay when there were zero do not care bytes , Removed for RDID as there are zero do not care
 
-    /*
-    // WAIT THE DON'T CARE BYTES
-    E_LOAD_32IMM(R0, SPI_FIFOWR__BASIC_CONFIG_WR);      // R0 = SPI_FIFOWR__BASIC_CONFIG_WR
-    E_LOAD_32IMM(R1, SPI8_FIFOWR_ADDR);                 // R1 = SPI8_FIFOWR_ADDR
+    // Wait do not care cycles (1 bytes - 8 cycles)
     E_LDR(R2, R7, 1);                                   // R2 = NUM OF DONT CARE BYTES
     E_ADD_IMMS(R2, R2, 0);                              // UPDATE FLAGS
+    E_COND_GOTO(ZE, "READ_BYTES");
+    E_LOAD_32IMM(R0, SPI_FIFOWR__BASIC_CONFIG_WR);      // R0 = SPI_FIFOWR__BASIC_CONFIG_WR
+    E_LOAD_32IMM(R1, SPI8_FIFOWR_ADDR);                 // R1 = SPI8_FIFOWR_ADDR    
 
 E_LABEL("DONT_CARE_BYTES_LOOP");
     E_COND_GOTO(ZE, "READ_BYTES");
     E_GOSUB("SPI_WR_BYTE");
     E_SUB_IMMS(R2, R2, 1); 
     E_GOSUB("DONT_CARE_BYTES_LOOP");
-*/
-
-
-//  NEW CODE, IT SEEMS LIKE THE DELAY NO LONGER EXITS
-    E_LDR(R2, R7, 1);                                   // R2 = NUM OF DONT CARE BYTES
-    E_ADD_IMMS(R2, R2, 0);                              // UPDATE FLAGS
-    E_COND_GOTO(ZE, "READ_BYTES");
-    E_LOAD_32IMM(R0, SPI_FIFOWR__BASIC_CONFIG_WR);      // R0 = SPI_FIFOWR__BASIC_CONFIG_WR
-    E_LOAD_32IMM(R1, SPI8_FIFOWR_ADDR);                 // R1 = SPI8_FIFOWR_ADDR
-    
-E_LABEL("DONT_CARE_BYTES_LOOP");
-    E_COND_GOTO(ZE, "READ_BYTES");
-    E_GOSUB("SPI_WR_BYTE");
-    E_SUB_IMMS(R2, R2, 1); 
-    E_GOSUB("DONT_CARE_BYTES_LOOP");
-    
 
 
     // READ INCOMING BYTES AND PUT THEM IN THE PARAMS BUFFER
 E_LABEL("READ_BYTES");
-
+        
     E_LDR(R2, R7, 2);                                   // R2 = NUM OF BYTES TO READ
-    E_LOAD_32IMM(R3, SPI8_FIFORD_ADDR);                 // R1 = SPI8_FIFORD_ADDR
-    E_LDR(R5, R7, 3);                                   // R3 = RX_BUFF PTR
-    E_ADD_IMMS(R2, R2, 0);                              // UPDATE FLAGS
 
+//    // Clear FIFOs
+//    E_LOAD_32IMM(R1, SPI8_FIFOCFG_ADDR);       
+//    E_LOAD_32IMM(R0,0x00030003);               
+//    E_STR(R1, R0, 0);
 
-    //clear fifos
-    E_LOAD_32IMM(R1, SPI8_FIFOCFG_ADDR);       
-    E_LOAD_32IMM(R0,0x00030003);               
-    E_STR(R1, R0, 0);
-
-    //setup spi write reg
+    // Setup spi write reg
     E_LOAD_32IMM(R0, SPI_FIFOWR__BASIC_CONFIG_RD);      // R0 = SPI_FIFOWR__BASIC_CONFIG_RD
     E_OR_IMM(R0, R0, SPI_READ_JUNK_BYTE);
-
     E_LOAD_32IMM(R1, SPI8_FIFOWR_ADDR);                 // R1 = SPI8_FIFOWR_ADDR
 
-
-    //start TX pipeline w/ two writes 
-    //Todo...  poll for data ready in before entering loop
+    //start TX pipeline
     E_GOSUB("SPI_WR_BYTE"); 
     E_GOSUB("SPI_WR_BYTE"); 
-    E_WAIT_FOR_BEAT();
-    E_WAIT_FOR_BEAT();
-    E_WAIT_FOR_BEAT();
-    E_WAIT_FOR_BEAT();
     E_SUB_IMMS(R2, R2, 2); 
 
 
-E_LABEL("READ_BYTES_LOOP");
+    // POLL UNTIL WE GET "START_RXLVL" INCOMING BYTES
+E_LABEL("POLL_START");
+    E_LOAD_32IMM(R0, SPI8_FIFOSTAT_ADDR);                 // R1 = SPI8_FIFOWR_
+E_LABEL("POLL_START_LOOP");
+    E_LDRB(R1, R0, 2);
+    E_AND_IMM(R1, R1, 0b11111);
+    E_SUB_IMMS(R1, R1, START_RXLVL);
+    E_COND_GOTO(NZ, "POLL_START_LOOP");
 
+    E_LOAD_32IMM(R0, SPI_FIFOWR__BASIC_CONFIG_RD);      // R0 = SPI_FIFOWR__BASIC_CONFIG_RD
+    E_LOAD_32IMM(R1, SPI8_FIFOWR_ADDR);                 // R1 = SPI8_FIFOWR_ADDR
+
+E_LABEL("READ_BYTES_LOOP");   
 
     //Subtract 1 and to see if this is the last byte
     //if so, change the SPI register for the last transmission to flat EOT and disable chip selects
     E_SUB_IMMS(R2, R2, 1); 
-
     E_COND_GOTO(NZ, "NEXT_BYTE_OUT");
-
     E_LOAD_32IMM(R0, SPI_FIFOWR__BASIC_CONFIG_RD_EOT);      // R0 = SPI_FIFOWR__BASIC_CONFIG_RD
 
-E_LABEL("NEXT_BYTE_OUT");    
-
-    //Restore out previous count
-    E_ADD_IMMS(R2, R2, 1); 
+E_LABEL("NEXT_BYTE_OUT");   
 
     E_GOSUB("SPI_WR_BYTE");                             //WRITE TO GENERATE THE CLOCK
+    
+    //READ THE FIFO, STORE IT IN THE RX_BUFFER, AND THEN INCREMENT THE PTR
+    E_LDR(R4, R3, 0);
+    E_STRB_POST(R5, R4, 1);
+
+    E_ADD_IMMS(R2, R2, 0); 
+    E_COND_GOTO(ZE, "CLEAN_FIFO");
+    E_GOSUB("READ_BYTES_LOOP");
+
+
+
+E_LABEL("CLEAN_FIFO");
+    E_WAIT_FOR_BEAT();
+    E_WAIT_FOR_BEAT();
+    E_LOAD_32IMM(R0, SPI8_FIFOSTAT_ADDR);                 // R1 = SPI8_FIFOWR_
+E_LABEL("CLEAN_FIFO_LOOP");
+    E_LDRB(R1, R0, 2);
+    E_AND_IMMS(R1, R1, 0b11111);
+    E_COND_GOTO(ZE, "END");
 
     //READ THE FIFO, STORE IT IN THE RX_BUFFER, AND THEN INCREMENT THE PTR
     E_LDR(R4, R3, 0);
-
     E_STRB_POST(R5, R4, 1);
-
-    E_SUB_IMMS(R2, R2, 1); 
-    
-    E_COND_GOTO(ZE, "END2");
-
-    E_GOSUB("READ_BYTES_LOOP");
+    E_GOTO("CLEAN_FIFO_LOOP");
 
     E_GOTO("END");
+E_LABEL("LAST_BYTE");
 
 
-E_LABEL("END2");
-     E_WAIT_FOR_BEAT();
-     E_WAIT_FOR_BEAT();
-     E_WAIT_FOR_BEAT();
-
-     //clear rx fifos
-     E_LDR(R4, R3, 0);
-     E_STRB_POST(R5, R4, 1);
-     E_LDR(R4, R3, 0);
-     E_STRB_POST(R5, R4, 1);
-     E_GOTO("END");
 /*
     SPI_WR_BYTE
         R0  -   CURRENT BYTE TO TRANSMIT    -   ARG
         R1  -   SPI8_FIFOWR_ADDR
 */
 E_LABEL("SPI_WR_BYTE");
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
     E_PUSH(RA);
     E_STR(R1, R0, 0);
     E_WAIT_FOR_BEAT();
     E_POP(RA);
     E_GOTO_REG(RA);
-
+    E_BTOG_IMM(GPO, GPO, EZH_TEST_GPIO_1); 
 
 /*
     SPI_WR_32_BITS

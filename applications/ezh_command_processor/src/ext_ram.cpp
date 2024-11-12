@@ -94,9 +94,7 @@ void ExtRAM::Init()
 
 uint16_t ExtRAM::RDID()
 {
-
-
-
+    
     ezh_spi_params.cmd_and_addr =  (PSRAM__RDID << 24);  
     ezh_spi_params.wait_cycles =  0; // zero dummy cycles
     
