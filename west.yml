@@ -4,7 +4,8 @@ manifest:
 
   remotes:
     - name: zephyrproject-rtos
-      url-base: https://github.com/zephyrproject-rtos
+      url-base: https://github.com/nxp-upstream
+#      url-base: https://github.com/zephyrproject-rtos
 
     - name: wn
       url-base: https://github.com/wavenumber-eng
@@ -25,7 +26,7 @@ manifest:
     - name: zephyr
       remote: zephyrproject-rtos
       repo-path: zephyr
-      revision: main
+      revision: add_mcxn10_sai_module_support
       import: true
 
     - name: wn_zephyr_modules   
