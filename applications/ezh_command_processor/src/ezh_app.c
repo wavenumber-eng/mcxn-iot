@@ -10,27 +10,13 @@
 #include "fsl_device_registers.h"
 
 
-
+LOG_MODULE_REGISTER(EZH_MGR);
 
 
 __attribute((section("SRAMX_EZH"))) uint32_t ezh_ram[512];
-
-
-
-// EZH APPLICATIONS
-
-#define CONFIG_BOARD_LPCXPRESSO55S69_LPC55S69_CPU0
-
-#if defined(CONFIG_BOARD_GIBBON_D_LPC55S69_CPU0) | defined(CONFIG_BOARD_LPCXPRESSO55S69_LPC55S69_CPU0)
 __attribute((section("SRAMX_EZH"))) uint32_t ezh_app0[256];
 __attribute((section("SRAMX_EZH"))) uint32_t ezh_app1[256];
 
-
-#elif defined (CONFIG_BOARD_FRDM_MCXN947_MCXN947_CPU0)
-__attribute((section("SRAM1"))) uint32_t my_ezh_program1[128]; // Todo relocate into fast SRAMX - no contention 
-__attribute((section("SRAM1"))) uint32_t my_ezh_program2[128]; // Todo relocate into fast SRAMX - no contention 
-__attribute((section("SRAM1"))) uint32_t my_ezh_program3[512]; // Todo relocate into fast SRAMX - no contention 
-#endif
 
 void ezh_app__toggle1(void);
 void ezh_app__toggle2(void);
@@ -40,13 +26,13 @@ void ezh_app__spi_rd(void);
 #define EZH_TEST_GPIO_1 18
 #define EZH_TEST_GPIO_2 25
 
-#if defined(CONFIG_BOARD_GIBBON_D_LPC55S69_CPU0) | defined(CONFIG_BOARD_LPCXPRESSO55S69_LPC55S69_CPU0)
-
 #define EZH__Reserved46_IRQn (IRQn_Type)30
 
 static volatile bool last_ezh_op_complete = true;
+
 uint32_t ezh_app_offset[8];
 uint32_t test_val;
+
 ISR_DIRECT_DECLARE(Reserved46_IRQHandler__EZH)
 {
     EZH_SetExternalFlag(1);
@@ -54,6 +40,7 @@ ISR_DIRECT_DECLARE(Reserved46_IRQHandler__EZH)
     last_ezh_op_complete=true;
 
     test_val = LPC_EZH_ARCH_B0->EZHB_EZH2ARM;
+
     EZH_stop();
 
     EZH_SetExternalFlag(0);
@@ -61,62 +48,24 @@ ISR_DIRECT_DECLARE(Reserved46_IRQHandler__EZH)
     return 0;
 }
 
-#elif defined (CONFIG_BOARD_FRDM_MCXN947_MCXN947_CPU0)
-ISR_DIRECT_DECLARE(EZH_INTERRUPT_ISR)
-{
-    EZH_SetExternalFlag(1);
-
-    test_val = LPC_EZH_ARCH_B0->EZHB_EZH2ARM;
-    EZH_stop();
-
-    EZH_SetExternalFlag(0);
-
-    return 0;
-}
-#endif
-
-
-LOG_MODULE_REGISTER(EZH_MGR);
 
 void ezh__build_apps()
 {
 
-#if defined(CONFIG_BOARD_GIBBON_D_LPC55S69_CPU0) | defined(CONFIG_BOARD_LPCXPRESSO55S69_LPC55S69_CPU0)
-
-
     EZH_SetExternalFlag(0);
 
     irq_disable(EZH__Reserved46_IRQn); // EZH irq NUMBER 30
+
     IRQ_DIRECT_CONNECT(EZH__Reserved46_IRQn, 0, Reserved46_IRQHandler__EZH, 0) // IRQ_ZERO_LATENCY doesn't build yet
 
     IOCON->PIO[0][18] = PINFUNC_EZH | 2 << 4 | 1 << 8;
     IOCON->PIO[0][25] = PINFUNC_EZH | 2 << 4 | 1 << 8;
 
+    SYSCON->AHBMATPRIO |= (0x3<<4)|(0x3<<6); // Give priority to SmartDMA
+
     CLOCK_EnableClock(kCLOCK_Ezhb); // enable EZH clock
 
     irq_enable(EZH__Reserved46_IRQn); // EZH irq number 30
-
-#elif defined (CONFIG_BOARD_FRDM_MCXN947_MCXN947_CPU0)
-    CLOCK_EnableClock(kCLOCK_Gpio1);
-    CLOCK_EnableClock(kCLOCK_Port1);
-
-    irq_disable(SMARTDMA_IRQn); 
-    IRQ_DIRECT_CONNECT(SMARTDMA_IRQn, 0, EZH_INTERRUPT_ISR, 0) // IRQ_ZERO_LATENCY doesn't build yet
-
-    //figure out what these do... From the old camera project.
-    SYSCON->LPCAC_CTRL &= ~1;                                  // rocky: enable LPCAC ICache
-    SYSCON->NVM_CTRL &= SYSCON->NVM_CTRL & ~(1 << 2 | 1 << 4); // enable flash Data cache     /* init I3C0*/
-    SYSCON->AHBMATPRIO |= (0x3<<4)|(0x3<<6); // Give priority to SmartDMA
-
-    PORT1->PCR[7]  = (7<<8) | (1<<12); //EZH_PIO3, PIO1_7
-
-    CLOCK_EnableClock(kCLOCK_Smartdma); // enable EZH clock
-
-    EZH_SetExternalFlag(0);
-
-    irq_enable(SMARTDMA_IRQn);
-#endif
-
 
    uint32_t last_idx=0;
    uint32_t num_ezh_apps=0;
@@ -134,12 +83,11 @@ void ezh__build_apps()
    last_idx += bunny_build(&ezh_ram[ ezh_app_offset[SPI_READ_APP]],
                     sizeof(ezh_app1),
                     ezh_app__spi_rd);
+   
    num_ezh_apps++;
 
 
    BUNNY_BUILD_PRINTF("Built %d ezh apps using a total of %d bytes\r\n",num_ezh_apps,last_idx*4);
-
-
 }
 
 uint32_t * selected_program = 0;
@@ -152,8 +100,6 @@ void ezh__execute_command(uint8_t cmd, EZHPWM_Para * ezh_parameters_ptr)
         offset = ezh_app_offset[cmd];
         selected_program = &ezh_ram[offset];
        // selected_program =  &ezh_ram[ezh_app_offset[cmd]];
-
-
     //the offset array gets trashed after teh 1st call...
 
         if(cmd == 0)
@@ -298,24 +244,17 @@ E_LABEL("END");
 
 
 
-#if defined(CONFIG_BOARD_GIBBON_D_LPC55S69_CPU0)  | defined(CONFIG_BOARD_LPCXPRESSO55S69_LPC55S69_CPU0)
 #define SPI8_FIFOWR_ADDR            (SPI8_BASE + 0xE20)  
 #define SPI8_FIFORD_ADDR            (SPI8_BASE + 0xE30)  
 #define SPI8_FIFOCFG_ADDR           (SPI8_BASE + 0xE00)  
 #define SPI8_FIFOSTAT_ADDR          (SPI8_BASE + 0XE04)
 
-#define SPI_FIFOWR__BASIC_CONFIG_WR    ((1 << 22) | (7 << 24))                                  //Activating all chip selects
+#define SPI_FIFOWR__BASIC_CONFIG_WR      ((1 << 22) | (7 << 24))                                  //Activating all chip selects
 
 #define SPI_FIFOWR__BASIC_CONFIG_WR_EOT  ((1 << 22) | (7 << 24) | (0xf<<16) | (1<<20))         //Note:  deactiving all chip selects
 
 #define SPI_FIFOWR__BASIC_CONFIG_RD       ((7 << 24) | (0xf<<16))                               //Activating all chip selects
 #define SPI_FIFOWR__BASIC_CONFIG_RD_EOT   (SPI_FIFOWR__BASIC_CONFIG_RD | (0xf<<16) | (1<<20))   //Note:  deactiving all chip selects
-
-#elif defined (CONFIG_BOARD_FRDM_MCXN947_MCXN947_CPU0)
-#define SPI8_FIFOWR_ADDR            (0)  
-#define SPI_FIFOWR__BASIC_CONFIG_WR    (0) 
-
-#endif
 
 
 #if defined(CONFIG__SPI_SCK_FREQ) && (CONFIG__SPI_SCK_FREQ == 10000000)
@@ -329,11 +268,6 @@ E_LABEL("END");
 #endif
 
 
-
-/*
-    Work In Progress SPI_WR
-        this function pretends to be a SPI write function, similar to the SPI read implementation
-*/
 void ezh_app__spi_wr(void)
 {
     E_NOP;
@@ -380,7 +314,6 @@ E_LABEL("NEXT_BYTE_OUT");
     E_COND_GOTO(ZE, "END");
     E_GOTO("WRITE_BYTES_LOOP");
 
-
     E_GOTO("END");
 
 
@@ -404,6 +337,7 @@ E_LABEL("SPI_WR_BYTE");
         R2  -   SPI TRANSACTION CONFIGS + BYTE TO WRITE
         R3  -   SPI8_FIFOWR_ADDR
 */
+
 E_LABEL("SPI_WR_32_BITS");
     E_PUSH(RA);
     E_PUSH(R1);
@@ -567,7 +501,6 @@ E_LABEL("NEXT_BYTE_OUT");
     E_ADD_IMMS(R2, R2, 0); 
     E_COND_GOTO(ZE, "CLEAN_FIFO");
     E_GOSUB("READ_BYTES_LOOP");
-
 
 
 E_LABEL("CLEAN_FIFO");

@@ -13,6 +13,7 @@
 #include "fsl_iocon.h"
 #include <fsl_sysctl.h>
 
+LOG_MODULE_REGISTER(main);
 
 static ExtRAM ext_ram; // create RAM instaance
 
@@ -58,7 +59,7 @@ static int psram_rdid_handler(const struct shell *shell,
 	ARG_UNUSED(argc);
 	ARG_UNUSED(argv);
 
-	uint16_t RDID_Code = ext_ram.RDID();
+	uint16_t RDID_Code = ext_ram.rdid();
 
 	shell_print(shell,"RDID: 0x%04x\r",RDID_Code);
 
@@ -126,15 +127,11 @@ static int psram_test_handler(const struct shell *shell,
 }
 
 
-#define TEST_ARRAY_SIZE 128
-uint8_t spi_test_array[TEST_ARRAY_SIZE];
-uint8_t test_array[64 * 4];
 
-SHELL_CMD_REGISTER(gibbon, NULL, "i am gibbon", gibbon_handler);
 SHELL_CMD_REGISTER(psram_rdid, NULL, "psram_rdid", psram_rdid_handler);
 SHELL_CMD_REGISTER(psram_test, NULL, "psram_test", psram_test_handler);
+SHELL_CMD_REGISTER(gibbon, NULL, "i am gibbon", gibbon_handler);
 
-LOG_MODULE_REGISTER(main);
 
 
 
