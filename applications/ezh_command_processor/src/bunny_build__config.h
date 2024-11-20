@@ -17,7 +17,6 @@
 #define BUNNY_BUILD_PRINTF(...)			     printk(__VA_ARGS__);
 #define BUNNY_BUILD_MAX_LABELS				 32
 
-
 /*
 	Output formatting for printf messages
 */

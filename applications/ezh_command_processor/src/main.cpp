@@ -133,8 +133,6 @@ SHELL_CMD_REGISTER(psram_test, NULL, "psram_test", psram_test_handler);
 SHELL_CMD_REGISTER(gibbon, NULL, "i am gibbon", gibbon_handler);
 
 
-
-
 int main(void)
 {
 
@@ -142,10 +140,6 @@ int main(void)
 	
 	while (1)
 	{
-		//	ext_ram.read(0xFF, &spi_test_array[0], TEST_ARRAY_SIZE);
-		//	ext_ram.write(0xFF, &spi_test_array[0], TEST_ARRAY_SIZE);
-		
-
 		k_sleep(K_MSEC(100));
 	}
 

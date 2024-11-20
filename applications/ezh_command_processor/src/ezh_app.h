@@ -9,9 +9,9 @@
 extern "C" {
 #endif
 
-#define SPI_RD_MAX_LENGTH   128
-#define CONFIG__SPI_SCK_FREQ    33000000
-
+#define   SPI_RD_MAX_LENGTH       128
+#define   CONFIG__SPI_SCK_FREQ    50000000
+#define   EZH_TEST_GPIO_1         3
 
 bool ezh__command_complete();
 
@@ -19,8 +19,8 @@ typedef struct
 {
     uint32_t cmd_and_addr;          // (cmd(8bits) << 24) | add(24bits)
     uint32_t wait_cycles;
-    uint32_t rx_buffer_length;
-    uint32_t * rx_buffer_ptr;
+    uint32_t buffer_length;
+    uint32_t * buffer_ptr;
 
 } ezh_spi_params_t;
 

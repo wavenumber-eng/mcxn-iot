@@ -10,8 +10,6 @@
 #include "ezh_app.h"
 #include "fsl_spi.h"
 
-
-
 LOG_MODULE_REGISTER(psram, LOG_LEVEL_DBG);
 
 // This variables must be global
@@ -20,9 +18,6 @@ uint32_t ezh_debug_params[10];
 EZHPWM_Para ezh_parameters;
 ezh_spi_params_t ezh_spi_params;
 
-#ifdef CONFIG_USE_MCU_LINK_PRO
-    static struct gpio_dt_spec io_dir_pin = GPIO_DT_SPEC_GET(DT_ALIAS(io_dir_pin), gpios);
-#endif
 
 #define IOCON_PIO_DIGITAL_EN 0x0100u  /*!<@brief Enables digital function */
 #define IOCON_PIO_FUNC1 0x01u         /*!<@brief Selects pin function 1 */
@@ -36,7 +31,7 @@ ezh_spi_params_t ezh_spi_params;
 #define IOCON_PIO_SLEW_STANDARD 0x00u /*!<@brief Standard mode, output slew rate control is enabled */
 
 
-    const uint32_t port1_pin1_config = (/* Pin is configured as HS_SPI_SSEL1 */
+const uint32_t port1_pin1_config = (/* Pin is configured as HS_SPI_SSEL1 */
                                         IOCON_PIO_FUNC5 |
                                         /* Selects pull-up function */
                                         IOCON_PIO_MODE_PULLUP |
@@ -52,15 +47,7 @@ ezh_spi_params_t ezh_spi_params;
 
 void SPI8__init()
 {
-
-	// Direction pin for chip select on MCU-Link Pro
-	#ifdef CONFIG_USE_MCU_LINK_PRO
-        gpio_pin_configure_dt(&io_dir_pin, GPIO_OUTPUT);
-	    gpio_pin_set_dt(&io_dir_pin, 1);
-    #else
-        /* PORT1 PIN1 (coords: 59) is configured as HS_SPI_SSEL1 */
-        IOCON_PinMuxSet(IOCON, 1U, 1U, port1_pin1_config);
-    #endif
+    IOCON_PinMuxSet(IOCON, 1U, 1U, port1_pin1_config);
 
 	spi_master_config_t SPI_Config = {0};
 
@@ -87,32 +74,31 @@ void ExtRAM::Init()
 	ezh__build_apps();
 	SPI8__init();
     init_complete = true;
-
 }
-
-
 
 uint16_t ExtRAM::rdid()
 {
+    /*
+        Note... The current Tx/Rx pipelie is deep.  Need a minimum of 5 bytes total.
+    */
 
-    uint32_t RDID_Code;
+    uint64_t RDID_Code;
     
     ezh_spi_params.cmd_and_addr =  (PSRAM__RDID << 24);  
     ezh_spi_params.wait_cycles =  0; // zero dummy cycles
     
-    ezh_spi_params.rx_buffer_length = sizeof(RDID_Code); // length in bytes
-    ezh_spi_params.rx_buffer_ptr = (uint32_t *)(&RDID_Code);
+    ezh_spi_params.buffer_length = sizeof(RDID_Code); // length in bytes
+    ezh_spi_params.buffer_ptr = (uint32_t *)(&RDID_Code);
 
     ezh_parameters.coprocessor_stack = (void *)ezh_stack;
     ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_params);
 
-
     ezh__execute_command(SPI_READ_APP, &ezh_parameters);
 
-     while(ezh__command_complete() == false)
-     {
+    while(ezh__command_complete() == false)
+    {
 
-     }
+    }
 
      return RDID_Code;
 }
@@ -120,13 +106,14 @@ uint16_t ExtRAM::rdid()
 
 
 
-int32_t ExtRAM::fast_read(uint32_t address, uint8_t *data, uint32_t len){
+int32_t ExtRAM::fast_read(uint32_t address, uint8_t *data, uint32_t len)
+{
      
     ezh_spi_params.cmd_and_addr =  (PSRAM__FAST_READ << 24) | (address & 0xffffff);       
     ezh_spi_params.wait_cycles =  1; // zero dummy cycles
     
-    ezh_spi_params.rx_buffer_length = len; // length in bytes
-    ezh_spi_params.rx_buffer_ptr = (uint32_t *)(data);
+    ezh_spi_params.buffer_length = len; // length in bytes
+    ezh_spi_params.buffer_ptr = (uint32_t *)(data);
 
     ezh_parameters.coprocessor_stack = (void *)ezh_stack;
     ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_params);
@@ -152,24 +139,19 @@ int32_t ExtRAM::read(uint32_t address, uint8_t *data, uint32_t len)
       
 }
 
-uint8_t  *spi_8bit_fifo_wr = (uint8_t *)(SPI8_BASE + 0xE20);
-uint16_t *spi_fifo_ctrl   =  (uint16_t *)(SPI8_BASE + 0xE22);
-
-
 int32_t ExtRAM::write(uint32_t address, uint8_t *data, uint32_t len)
 {
     
     ezh_spi_params.cmd_and_addr =  (((uint8_t)PSRAM__WRITE) << 24) | (address & 0xffffff);      
     ezh_spi_params.wait_cycles =  0; // zero dummy cycles
         
-    ezh_spi_params.rx_buffer_length = len; // length in bytes
-    ezh_spi_params.rx_buffer_ptr = (uint32_t *)(&data[0]);
+    ezh_spi_params.buffer_length = len; // length in bytes
+    ezh_spi_params.buffer_ptr = (uint32_t *)(data);
 
     ezh_parameters.coprocessor_stack = (void *)ezh_stack;
     ezh_parameters.p_buffer = (uint32_t *)(&ezh_spi_params);
  
     ezh__execute_command(SPI_WRITE_APP, &ezh_parameters);
-
 
     while(ezh__command_complete() == false)
     {
