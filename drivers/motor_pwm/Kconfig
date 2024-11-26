@@ -1,0 +1,13 @@
+# Copyright (c) 2024, FARO
+
+config MOTOR_PWM
+	bool "Motor PWM"
+	default y
+	help
+	  Motor PWM driver
+
+config CUSTOM_PWM
+	bool "Custom PWM"
+	default y
+	help
+		Custom PWM driver

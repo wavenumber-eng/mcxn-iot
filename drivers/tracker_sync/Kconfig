@@ -1,0 +1,18 @@
+# Copyright (c) 2021 Nordic Semiconductor ASA
+# SPDX-License-Identifier: Apache-2.0
+
+config TRACKER_SYNC_PHOENIX
+	bool "Example sensor"
+	default y
+	depends on DT_HAS_TRACKER_SYNC_PHOENIX_ENABLED
+	select GPIO
+	help
+	  Enable example sensor
+
+config TRACKER_SYNC_SIM
+	bool "Example sensor"
+	default y
+	depends on DT_HAS_TRACKER_SYNC_SIM_ENABLED
+	select GPIO
+	help
+	  Enable example sensor

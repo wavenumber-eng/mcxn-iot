@@ -1,0 +1,40 @@
+
+manifest:
+  self:
+    west-commands: scripts/west-commands.yml
+
+  remotes:
+    - name: zephyrproject-rtos
+      url-base: https://github.com/zephyrproject-rtos
+    - name: zephyrproject-rtos-faro
+      url-base: git@ssh.dev.azure.com:v3/faro-us-hardware/Tracker.FW
+    - name: ADM
+      url-base: https://faro-us-hardware@dev.azure.com/faro-us-hardware/Tracker.FW/_git
+    - name: AzZe
+      url-base: https://faro-us-hardware@dev.azure.com/faro-us-hardware/Tracker.FW/_git
+    - name: DPU
+      url-base: https://faro-us-hardware@dev.azure.com/faro-us-hardware/Tracker.FW/_git
+
+  projects:
+    - name: Phoenix.ADM
+      remote: ADM
+      revision: main
+    - name: Phoenix.AzZe
+      remote: AzZe
+      revision: main
+    - name: Phoenix.DPU
+      remote: DPU
+      revision: main
+    - name: zephyr
+      remote: zephyrproject-rtos
+      revision: v3.7.0
+      import:
+        # By using name-allowlist we can clone only the modules that are
+        # strictly needed by the application.
+        name-allowlist:
+          - cmsis      # required by the ARM port
+          - hal_nxp    # required by the mimxrt1170-evk board
+          - mbedtls
+          - open-amp
+          - libmetal
+          - nanopb

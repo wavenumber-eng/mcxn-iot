@@ -1,0 +1,10 @@
+# Copyright 2022-2023 NXP
+#
+# SPDX-License-Identifier: Apache-2.0
+
+source "share/sysbuild/Kconfig"
+
+config MIMXRT1176_CM4_REMOTE_BOARD
+string
+	default "mimxrt1170_evk/mimxrt1176/cm4" if $(BOARD) = "mimxrt1170_evk"
+	default "phoenix_rt1176/mimxrt1176/cm4" if $(BOARD) = "phoenix_rt1176"

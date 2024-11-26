@@ -1,0 +1,35 @@
+# This file is provided so that the application can be compiled using Twister,
+# the Zephyr testing tool. In this file, multiple combinations can be specified,
+# so that you can easily test all of them locally or in CI.
+sample:
+  description: Phoenix microcontroller firmware
+  name: phoenix-microcontroller 
+
+common:
+  sysbuild: true
+  integration_platforms:
+    - mimxrt1170_evk
+    - phoenix_rt1176
+tests:
+  app.default: {}
+  app.debug:
+    extra_overlay_confs:
+      - debug.conf
+
+  sample.sysbuild.app.phoenix_rt1176_mimxrt1176_cm7:
+    platform_allow:
+      - phoenix_rt1176/mimxrt1176/cm7
+    integration_platforms:
+      - phoenix_rt1176/mimxrt1176/cm7
+    extra_args:
+      SB_CONF_FILE=sysbuild/phoenix_rt1176_mimxrt1176_cm7.conf
+      hello_world_SNIPPET=phoenix-rt1176-cm7
+
+    sample.sysbuild.app.phoenix_rt1176_mimxrt1176_cm4:
+    platform_allow:
+      - phoenix_rt1176/mimxrt1176/cm4
+    integration_platforms:
+      - phoenix_rt1176/mimxrt1176/cm4
+    extra_args:
+      SB_CONF_FILE=sysbuild/phoenix_rt1176_mimxrt1176_cm4.conf
+      hello_world_SNIPPET=phoenix-rt1176-cm4

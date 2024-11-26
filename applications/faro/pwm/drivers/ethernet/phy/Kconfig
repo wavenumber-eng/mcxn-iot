@@ -1,0 +1,24 @@
+# Ethernet PHY drivers configuration options
+
+# Copyright (c) 2021 IP-Logix Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig ETH_PHY_DRIVER_FARO
+	bool "Ethernet PHY drivers FARO"
+	default y if NET_L2_ETHERNET || ETH_DRIVER
+
+if ETH_PHY_DRIVER
+
+
+config PHY_MICROCHIP_LAN8830
+	bool "Microchip LAN8830 PHY Driver"
+	default y
+	depends on DT_HAS_MICROCHIP_LAN8830_ENABLED
+	depends on MDIO
+	depends on GPIO || (!$(dt_compat_any_has_prop,$(DT_COMPAT_MICROCHIP_LAN8830),reset-gpios) && \
+			    !$(dt_compat_any_has_prop,$(DT_COMPAT_MICROCHIP_LAN8830),int-gpios))
+	help
+	  Enable Microchip LAN8830 Ethernet PHY Driver
+
+
+endif # "Ethernet PHY Drivers"

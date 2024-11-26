@@ -1,0 +1,13 @@
+// A very simple protocol definition, consisting of only
+// one message.
+
+syntax = "proto3";
+
+message VersionMessage {
+    int32 version_major = 1;
+    int32 version_minor = 2;
+    int32 patch_level = 3;
+	int32 version_tweak = 4;
+	string extra_version = 5;
+	string version_string = 6;
+}

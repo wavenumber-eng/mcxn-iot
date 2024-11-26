@@ -1,0 +1,118 @@
+# Copyright (c) 2021 Nordic Semiconductor ASA
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Simulates the tracker sync.
+
+compatible: "motor-pwm"
+
+include: [pwm-controller.yaml, pinctrl-device.yaml, base.yaml]
+
+properties:
+  index:
+    type: int
+    description: flexpwm submodule index
+    required: true
+
+  interrupts:
+    required: true
+
+  run-in-wait:
+    type: boolean
+    description: |
+      Enable for PWM to keep running in WAIT mode.
+
+  run-in-debug:
+    type: boolean
+    description: |
+      Enable for PWM to keep running in debug mode.
+
+  nxp,prescaler:
+    type: int
+    enum: [1, 2, 4, 8, 16, 32, 64, 128]
+    required: true
+    description: |
+      Clock prescaler at the input of the PWM.
+
+  nxp,reload:
+    type: string
+    enum:
+      - "immediate"
+      - "half-cycle"
+      - "full-cycle"
+      - "half-and-full-cycle"
+    description: |
+      Select how to load the buffered-registers with new values:
+      "immediate" - buffered-registers get loaded with new values as soon as LDOK bit is set;
+      "half-cycle" - registers loaded on a PWM half cycle;
+      "full-cycle" - registers loaded on a PWM full cycle;
+      "half-and-full-cycle" - registers loaded on a PWM half & full cycle.
+
+  "#pwm-cells":
+    const: 3
+
+  mode:
+    type: string
+    enum:
+      - "signed-center-aligned"
+      - "center-aligned"
+      - "signed-edge-aligned"
+      - "edge-aligned"
+    description: Mode of the PWM.
+    required: true
+
+  clock-source:
+    type: int
+    enum: [0, 1, 2]
+    description: |
+      Clock source for the PWM.
+      0 - Bus Clock.
+      1 - External Clock.
+      2 - Submodule0 Clock.
+
+  channel:
+    type: int
+    enum: [0, 1, 2]
+    description: |
+      PWM channel of the submodule
+      0 - Channel B
+      1 - Channel A
+      2 - Channel X
+
+  init-source:
+    type: int
+    enum: [0, 1, 2, 3]
+    description: |
+      Initial source for the PWM.
+      0 - kPWM_Initialize_LocalSync.
+      1 - kPWM_Initialize_MasterReload.
+      2 - kPWM_Initialize_MasterSync.
+      3 - kPWM_Initialize_ExtSync.
+
+  dead-time:
+    type: int
+    description: Deadtime in nanoseconds.
+    required: true
+
+  pair-operation:
+    type: int
+    enum: [0, 1, 2]
+    description: |
+      Pair operation mode.
+      0 - Independent mode.
+      1 - Complementary PWMA mode.
+      2 - Complementary PWMB mode.
+    required: true
+
+  pwm-freq:
+    type: int
+    description: Frequency in Hz.
+
+  clock-freq:
+    type: int
+    description: Clock frequency in Hz.
+  
+pwm-cells:
+  - channel
+  - period
+  - flags

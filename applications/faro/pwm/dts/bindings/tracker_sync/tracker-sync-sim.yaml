@@ -1,0 +1,16 @@
+# Copyright (c) 2021 Nordic Semiconductor ASA
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Simulates the tracker sync.
+
+
+compatible: "tracker-sync-sim"
+
+include: base.yaml
+
+properties:
+  simulated-rate-ms:
+    type: int
+    description: Miliseconds between simulated sync pulses
+    required: true

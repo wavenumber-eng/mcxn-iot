@@ -1,0 +1,16 @@
+# Copyright (c) 2024 Nordic Semiconductor ASA
+# SPDX-License-Identifier: Apache-2.0
+
+choice MCUBOOT_MODE
+	prompt "MCUBOOT mode"
+	bool
+	default MCUBOOT_MODE_SWAP_WITHOUT_SCRATCH if BOARD_MIMXRT1170_EVK_MIMXRT1176_CM7
+	default MCUBOOT_MODE_SWAP_WITHOUT_SCRATCH if BOARD_PHOENIX_RT1176_MIMXRT1176_CM7
+
+config MCUBOOT_MODE_SWAP_WITHOUT_SCRATCH
+	bool "Swap without scratch"
+	
+config MCUBOOT_MODE_SWAP_USING_SCRATCH
+	bool "Swap using scratch"
+
+endchoice

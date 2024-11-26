@@ -1,0 +1,104 @@
+/*
+ * Copyright 2023 NXP
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <zephyr/dt-bindings/memory-attr/memory-attr-arm.h>
+#include <nxp/nxp_rt1170.dtsi>
+
+/ {
+	chosen {
+		zephyr,ipc_shm = &ocram2_overlay;
+	};
+
+	/* OpenAMP fails with full 512K OCRAM2 memory region as shared memory.
+	 * Define a subset of the OCRAM2 region for demo to use
+	 * Note that shared memory must have specific MPU attributes set.
+	 */
+	ocram2_overlay: memory@202c0000{
+		compatible = "zephyr,memory-region", "mmio-sram";
+		reg = <0x202c0000 DT_SIZE_K(16)>;
+		zephyr,memory-region="OCRAM2_OVERLAY";
+		zephyr,memory-attr = <( DT_MEM_ARM(ATTR_MPU_IO) )>;
+	};
+
+		soc {
+		flexpwm3: flexpwm@40194000 {
+			status = "okay";
+			compatible = "nxp,flexpwm";
+			flexpwm3_pwm0 {
+				compatible = "motor-pwm";
+				index = <0>;
+				run-in-debug;
+				status = "okay";
+				pinctrl-0 = <&pinmux_flexpwm3>;
+				pinctrl-names = "default";
+				nxp,reload = "full-cycle";
+				mode = "signed-center-aligned";
+				nxp,prescaler = < 4 >;
+				#pwm-cells = < 0x3 >;
+				dead-time = <156>;
+				pair-operation = <1>;
+				clock-source = <0>;
+				init-source = <0>;
+				pwm-freq = <1000>;
+				clock-freq = <240000000>;
+			};
+
+			flexpwm3_pwm1 {
+				compatible = "motor-pwm";
+				index = <1>;
+				run-in-debug;
+				status = "okay";
+				pinctrl-0 = <&pinmux_flexpwm3>;
+				pinctrl-names = "default";
+				nxp,reload = "full-cycle";
+				mode = "signed-center-aligned";
+				nxp,prescaler = <2>;
+				#pwm-cells = < 0x3 >;
+				dead-time = <156>;
+				pair-operation = <1>;
+				clock-source = <2>;
+				init-source = <2>;
+				pwm-freq = <1000>;
+				clock-freq = <60000000>;
+			};
+
+			flexpwm3_pwm2 {
+				compatible = "motor-pwm";
+				index = <2>;
+				run-in-debug;
+				status = "okay";
+				pinctrl-0 = <&pinmux_flexpwm3>;
+				pinctrl-names = "default";
+				nxp,reload = "immediate";
+				mode = "signed-center-aligned";
+				nxp,prescaler = < 2 >;
+				#pwm-cells = < 0x3 >;
+				dead-time = <156>;
+				pair-operation = <1>;
+				clock-source = <2>;
+				init-source = <2>;
+				pwm-freq = <1000>;
+				clock-freq = <60000000>;
+			};
+		};
+	};
+};
+
+
+&pinctrl {
+
+	pinmux_flexpwm3: pinmux_flexpwm3 {
+		group0 {
+			pinmux = <&iomuxc_gpio_emc_b2_00_flexpwm3_pwm0_a>,
+					<&iomuxc_gpio_emc_b2_01_flexpwm3_pwm0_b>,
+					<&iomuxc_gpio_emc_b2_02_flexpwm3_pwm1_a>,
+					<&iomuxc_gpio_emc_b2_04_flexpwm3_pwm2_a>;
+			drive-strength = "high";
+			bias-pull-up;
+			slew-rate = "fast";
+		};
+	};
+};

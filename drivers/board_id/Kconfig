@@ -1,0 +1,18 @@
+# Copyright (c) 2021 Nordic Semiconductor ASA
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD_ID_PHOENIX
+	bool "Example sensor"
+	default y
+	depends on DT_HAS_BOARD_ID_PHOENIX_ENABLED
+	select GPIO
+	help
+	  Enable example sensor
+
+config BOARD_ID_SIM
+	bool "Example sensor"
+	default y
+	depends on DT_HAS_BOARD_ID_SIM_ENABLED
+	select GPIO
+	help
+	  Enable example sensor

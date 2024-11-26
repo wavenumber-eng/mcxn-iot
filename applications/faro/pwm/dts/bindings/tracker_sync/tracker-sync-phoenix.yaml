@@ -1,0 +1,24 @@
+# Copyright (c) 2021 Nordic Semiconductor ASA
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Interface for the tracker sync pins
+
+
+compatible: "tracker-sync-phoenix"
+
+include: base.yaml
+
+properties:
+  #sync-ins:
+  #  type: phandle-array
+  #  required: true
+  #  description: Input to processor for sync.
+  input-gpios:
+    type: phandle-array
+    required: true
+    description: Input GPIO to be sensed.
+  output-gpios:
+    type: phandle-array
+    required: true
+    description: Input GPIO to be sensed.

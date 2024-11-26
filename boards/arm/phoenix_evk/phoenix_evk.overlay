@@ -1,0 +1,111 @@
+/*
+ * Copyright 2024 FARO
+ *
+ * ENET_1G binding overlay
+ */
+
+#include <zephyr/dt-bindings/memory-attr/memory-attr-arm.h>
+
+/ {
+	soc {
+		/delete-node/ ethernet@40424000;
+	};
+};
+
+&enet1g {
+	status = "okay";
+};
+
+&enet1g_mac {
+	status = "okay";
+};
+
+&enet1g_mdio {
+	status = "okay";
+	enet1g_phy: phy@1 {
+		status = "okay";
+	};
+};
+
+&enet1g_ptp_clock {
+	status = "okay";
+};
+
+&pinctrl {
+	/delete-node/ pinmux_enet;
+	/delete-node/ pinmux_enet_mdio;
+	/delete-node/ pinmux_ptp;
+
+	pinmux_flexpwm3: pinmux_flexpwm3 {
+		group0 {
+			pinmux = <&iomuxc_gpio_emc_b2_00_flexpwm3_pwm0_a>,
+						<&iomuxc_gpio_emc_b2_01_flexpwm3_pwm0_b>,
+						<&iomuxc_gpio_emc_b2_02_flexpwm3_pwm1_a>,
+						<&iomuxc_gpio_emc_b2_04_flexpwm3_pwm2_a>;
+			drive-strength = "high";
+			bias-pull-up;
+			slew-rate = "fast";
+		};
+	};
+};
+
+/*
+Components need to simulate device that are only on the phoenix board
+*/
+/ {
+	board_id: board-id {
+		compatible = "board-id-sim";
+		simulated-id = <7>;
+		
+	};
+
+	tracker_sync: tracker_sync {
+		compatible = "tracker-sync-sim";
+		simulated-rate-ms = <1000>;
+	};
+};
+
+/ {
+	chosen {
+		zephyr,console = &cdc_acm_uart0;
+		zephyr,shell-uart = &cdc_acm_uart0;
+	};
+};
+
+&zephyr_udc0 {
+	cdc_acm_uart0: cdc_acm_uart0 {
+		compatible = "zephyr,cdc-acm-uart";
+	};
+};
+
+/ {
+    compatible = "nxp,mimxrt1170-evk";
+
+    aliases {
+        pwm3-pwm0 = &flexpwm3_pwm0;
+        pwm3-pwm1 = &flexpwm3_pwm1;
+        pwm3-pwm2 = &flexpwm3_pwm2;
+    };
+
+	soc{
+		flexpwm3: flexpwm@40194000 {
+			flexpwm3_pwm0: flexpwm3_pwm0 {
+				status = "okay";
+				pinctrl-0 = <&pinmux_flexpwm3>;
+				pinctrl-names = "default";
+			};
+
+			flexpwm3_pwm1: flexpwm3_pwm1 {
+				status = "okay";
+				pinctrl-0 = <&pinmux_flexpwm3>;
+				pinctrl-names = "default";
+			};
+
+			flexpwm3_pwm2: flexpwm3_pwm2 {
+				status = "okay";
+				pinctrl-0 = <&pinmux_flexpwm3>;
+				pinctrl-names = "default";
+			};
+		};
+	};
+};
