@@ -9,12 +9,15 @@ manifest:
     - name: wn
       url-base: https://github.com/wavenumber-eng
 
+    - name: lieff
+      url-base: https://github.com/lieff
+
+
   defaults:
     remote: zephyrproject-rtos
     revision: main
 
   projects:
-
 
     - name: golioth
       path: modules/lib/golioth-firmware-sdk
@@ -25,7 +28,7 @@ manifest:
     - name: zephyr
       remote: zephyrproject-rtos
       repo-path: zephyr
-      revision: main
+      revision: v4.1.0-rc1
       import: true
 
     - name: wn_zephyr_modules   
@@ -38,7 +41,11 @@ manifest:
       revision: main
       path: modules/bunny_build
 
-
+#    - name: minimp3
+#      remote: lieff
+#      path: modules/minimp3
+#      revision: main
+#      submodules: true
 
   self:
     path: mcxn-iot
