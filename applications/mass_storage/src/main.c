@@ -150,13 +150,13 @@ static int play_wave_file_handler(const struct shell *shell, size_t argc, char *
 //	}
 
 	shell_fprintf(shell, SHELL_VT100_COLOR_YELLOW, "Playing file: %s\n", argv[1]);
-	audiofs__play_file(argv[1]);
+//	audiofs__play_file(argv[1]);
 	return 0;
 }
 
 static int read_available_files_handler(const struct shell *shell, size_t argc, char **argv)
 {
-	audiofs__read_available_files();
+//	audiofs__read_available_files();
 	return 0;
 }
 
@@ -183,7 +183,7 @@ int main(void)
 	LOG_INF("The device is put in USB mass storage mode.\n");
 
 
-	audiofs__i2s_init();
+//	audiofs__i2s_init();
 
 //	audiofs__read_available_files();
 //

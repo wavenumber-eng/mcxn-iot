@@ -1,0 +1,39 @@
+
+&pinctrl {
+	pinmux_flexiospi: pinmux_flexiospi {
+		group0 {
+			pinmux = <FLEXIO0_D0_P0_16>,     // D0 is DIN   
+				<FLEXIO0_D1_P0_17>,          // D1 is DOUT  
+				<FLEXIO0_D2_P0_18>,         // D2 is SCK
+				<FLEXIO0_D3_P0_19>;         // D3 is CS
+			drive-strength = "high";
+			slew-rate = "slow";
+		};
+	};
+};
+
+
+
+&flexio0 {
+	status = "okay";
+
+    flexiospi: flexiospi {
+		compatible = "nxp,flexio-spi";
+		status = "okay";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		cs-gpios = <&gpio0 19 GPIO_ACTIVE_LOW>;		//AD29 IS GPIO IO 28
+		sck-pin = <2>;
+		sdo-pin = <1>;
+		sdi-pin = <0>;
+		pinctrl-0 = <&pinmux_flexiospi>;
+		pinctrl-names = "default";
+		slow@0 {
+			status = "okay";
+			compatible = "test-spi-loopback-slow";
+			reg = <0>;
+			spi-max-frequency = <500000>;
+		};
+	};
+    
+};
