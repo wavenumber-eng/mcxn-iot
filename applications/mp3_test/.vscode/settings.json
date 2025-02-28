@@ -1,0 +1,30 @@
+{
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#a800ae",
+        "activityBar.background": "#a800ae",
+        "activityBar.foreground": "#e7e7e7",
+        "activityBar.inactiveForeground": "#e7e7e799",
+        "activityBarBadge.background": "#9f9a00",
+        "activityBarBadge.foreground": "#15202b",
+        "commandCenter.border": "#e7e7e799",
+        "sash.hoverBorder": "#a800ae",
+        "statusBar.background": "#77007b",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#a800ae",
+        "statusBarItem.remoteBackground": "#77007b",
+        "statusBarItem.remoteForeground": "#e7e7e7",
+        "titleBar.activeBackground": "#77007b",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveBackground": "#77007b99",
+        "titleBar.inactiveForeground": "#e7e7e799"
+    },
+    "peacock.color": "#77007b",
+    "files.associations": {
+        "ihex.h": "c",
+        "kernel.h": "c",
+        "minimp3.h": "c",
+        "mp3_data.h": "c",
+        "log.h": "c",
+        "mp3_files.h": "c"
+    }
+}

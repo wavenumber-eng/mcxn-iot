@@ -1,0 +1,28 @@
+
+
+
+Breakpoint=C:/work/wavenumber/mcxn-iot/mcxn-iot/applications/mp3_test/src/minimp3.h:1710:5, State=BP_STATE_DISABLED
+Breakpoint=C:/work/wavenumber/mcxn-iot/mcxn-iot/applications/mp3_test/src/minimp3.h:1731, State=BP_STATE_ON
+Breakpoint=C:/work/wavenumber/mcxn-iot/mcxn-iot/applications/mp3_test/src/main.c:64:2, State=BP_STATE_DISABLED
+OpenDocument="main.c", FilePath="C:/work/wavenumber/mcxn-iot/mcxn-iot/applications/mp3_test/src/main.c", Line=47
+OpenDocument="kernel.h", FilePath="C:/work/wavenumber/mcxn-iot/mcxn-iot/applications/mp3_test/build/zephyr/include/generated/zephyr/syscalls/kernel.h", Line=592
+OpenDocument="log_msg.h", FilePath="C:/work/wavenumber/mcxn-iot/mcxn-iot/applications/mp3_test/build/zephyr/include/generated/zephyr/syscalls/log_msg.h", Line=22
+OpenDocument="fault_s.S", FilePath="C:/work/wavenumber/mcxn-iot/zephyr/arch/arm/core/cortex_m/fault_s.S", Line=51
+OpenDocument="minimp3.h", FilePath="C:/work/wavenumber/mcxn-iot/mcxn-iot/applications/mp3_test/src/minimp3.h", Line=1658
+OpenToolbar="Debug", Floating=0, x=0, y=0
+OpenWindow="Source Files", DockArea=LEFT, x=0, y=0, w=619, h=226, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Disassembly", DockArea=RIGHT, x=0, y=0, w=300, h=943, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Watched Data 1", DockArea=LEFT, x=0, y=1, w=619, h=431, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+OpenWindow="Functions", DockArea=LEFT, x=0, y=2, w=619, h=284, FilterBarShown=0, TotalValueBarShown=0, ToolBarShown=0
+SmartViewPlugin="", Page="", Toolbar="Hidden", Window="SmartView 1"
+TableHeader="Functions", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Address";"Size";"#Insts";"Source"], ColWidths=[1351;100;100;100;752]
+TableHeader="Source Files", SortCol="File", SortOrder="DESCENDING", VisibleCols=["File";"Status";"Size";"#Insts";"Path"], ColWidths=[246;100;100;100;722]
+TableHeader="Power Sampling", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Index";"Time";"Ch 0"], ColWidths=[100;100;100]
+TableHeader="Watched Data 1", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Location";"Refresh"], ColWidths=[190;303;100;100]
+TableHeader="RegisterSelectionDialog", SortCol="None", SortOrder="ASCENDING", VisibleCols=[], ColWidths=[]
+WatchedExpression="samples", DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="mp3d", DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="info", DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="int_size", DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="offset", DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
+WatchedExpression="pcm", DisplayFormat=DISPLAY_FORMAT_DEC, Window=Watched Data 1
