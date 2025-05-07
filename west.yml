@@ -9,8 +9,8 @@ manifest:
     - name: wn
       url-base: https://github.com/wavenumber-eng
 
-    - name: lieff
-      url-base: https://github.com/lieff
+    - name: nordic
+      url-base: https://github.com/nrfconnect
 
 
   defaults:
@@ -35,17 +35,17 @@ manifest:
       remote: wn    
       path: ./modules/wn_modules     
       revision: main
+
+    - name: wn_zephyr_custom_boards
+      remote: wn
+      path: ./boards
+      revision: main
      
     - name: bunny_build
       remote: wn
       revision: main
       path: modules/bunny_build
 
-#    - name: minimp3
-#      remote: lieff
-#      path: modules/minimp3
-#      revision: main
-#      submodules: true
 
   self:
     path: mcxn-iot
